@@ -7,6 +7,7 @@ const ArcheiveUser = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [statusMap, setStatusMap] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -165,6 +166,7 @@ const ArcheiveUser = () => {
 
       {/* Modal */}
       {isModalOpen &&
+        selectedPatient &&
         createPortal(
           <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-xl overflow-auto max-h-[90vh] relative">
@@ -178,11 +180,9 @@ const ArcheiveUser = () => {
               <div className="flex flex-col items-start">
                 <div className="w-32 h-32 mb-6 rounded-md overflow-hidden bg-gray-300">
                   <img
-                    src={
-                      `${import.meta.env.VITE_API_BASE_URL}/${
-                        selectedPatient.image
-                      }` || "./images/profile_img.svg"
-                    }
+                    src={`${import.meta.env.VITE_API_BASE_URL}/${
+                      selectedPatient.image || "images/profile_img.svg"
+                    }`}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -215,34 +215,71 @@ const ArcheiveUser = () => {
                   <p className="text-sm">
                     Priority: {selectedPatient.priorityLevel}
                   </p>
-                  <p className="text-sm">Status: {selectedPatient.status}</p>
+                  <p className="text-sm">
+                    Status:{" "}
+                    {statusMap[selectedPatient._id] || selectedPatient.status}
+                  </p>
                   <p className="text-sm">
                     Special Instructions: {selectedPatient.specialInstructions}
                   </p>
+                  <p className="text-sm">
+                    Employee ID:{" "}
+                    {selectedPatient.employeeId?.employeeId || "N/A"}
+                  </p>
+                  {selectedPatient.documents?.length > 0 && (
+                    <div className="text-sm">
+                      <p className="font-semibold mb-1">Documents:</p>
+                      <ul className="list-disc ml-5 space-y-1">
+                        {selectedPatient.documents.map(
+                          (doc: string, index: number) => (
+                            <li key={index}>
+                              <a
+                                href={`${
+                                  import.meta.env.VITE_API_BASE_URL
+                                }/${doc}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className="text-blue-600 hover:underline break-all"
+                              >
+                                {doc.split("/").pop()}
+                              </a>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full mb-4">
                   <h2 className="text-lg text-gray-500 font-semibold mb-1">
-                    Assigned Employee
+                    Patient Info
                   </h2>
+                  <p className="text-sm">Gender: {selectedPatient.gender}</p>
                   <p className="text-sm">
-                    Employee ID:{" "}
-                    {selectedPatient?.employeeId?.employeeId || "N/A"}
+                    DOB:{" "}
+                    {selectedPatient.dateOfBirth
+                      ? new Date(
+                          selectedPatient.dateOfBirth
+                        ).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "N/A"}
                   </p>
-                  <p className="text-sm">
-                    Name: {selectedPatient?.employeeId?.fullName || "N/A"}
-                  </p>
+                  <p className="text-sm">Age: {selectedPatient.age || "N/A"}</p>
                 </div>
 
                 <div className="w-full">
                   <h2 className="text-lg text-gray-500 font-semibold mb-1">
-                    Patient Info
+                    Contact Info
                   </h2>
                   <p className="text-sm">Email: {selectedPatient.email}</p>
                   <p className="text-sm">
                     Phone: {selectedPatient.contactNumber}
                   </p>
-                  <p className="text-sm">Gender: {selectedPatient.gender}</p>
                   <p className="text-sm">Address: {selectedPatient.address}</p>
                 </div>
               </div>

@@ -251,6 +251,10 @@ const Appointments = () => {
                   <p className="text-sm">
                     Special Instructions: {selectedPatient.specialInstructions}
                   </p>
+                  <p className="text-sm">
+                    Employee ID:{" "}
+                    {selectedPatient.employeeId?.employeeId || "N/A"}
+                  </p>
                   {selectedPatient.documents?.length > 0 && (
                     <div className="text-sm">
                       <p className="font-semibold mb-1">Documents:</p>
@@ -294,10 +298,7 @@ const Appointments = () => {
                         })
                       : "N/A"}
                   </p>
-                  <p className="text-sm">
-                    Employee ID:{" "}
-                    {selectedPatient.employeeId?.employeeId || "N/A"}
-                  </p>
+                  <p className="text-sm">Age: {selectedPatient.age || "N/A"}</p>
                 </div>
 
                 <div className="w-full">

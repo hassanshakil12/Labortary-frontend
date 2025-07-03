@@ -29,7 +29,9 @@ const Appointments = () => {
       try {
         const token = localStorage.getItem("userAuthToken");
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/get-appointments`,
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/v1/employee/get-appointments`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -201,6 +203,10 @@ const Appointments = () => {
                   <p className="text-sm">
                     Special Instructions: {selectedPatient.specialInstructions}
                   </p>
+                  <p className="text-sm">
+                    Employee ID:{" "}
+                    {selectedPatient.employeeId?.employeeId || "N/A"}
+                  </p>
                   {selectedPatient.documents?.length > 0 && (
                     <div className="text-sm">
                       <p className="font-semibold mb-1">Documents:</p>
@@ -244,10 +250,7 @@ const Appointments = () => {
                         })
                       : "N/A"}
                   </p>
-                  <p className="text-sm">
-                    Employee ID:{" "}
-                    {selectedPatient.employeeId?.employeeId || "N/A"}
-                  </p>
+                  <p className="text-sm">Age: {selectedPatient.age || "N/A"}</p>
                 </div>
 
                 <div className="w-full">
