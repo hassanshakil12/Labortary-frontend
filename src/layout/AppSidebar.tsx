@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <UserCircleIcon />,
-    name: "Archeive",
+    name: "Archive",
     path: "/archeive",
   },
   {

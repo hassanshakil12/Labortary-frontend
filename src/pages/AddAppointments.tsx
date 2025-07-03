@@ -42,6 +42,7 @@ const PatientUploadForm: React.FC = () => {
     email: "",
     contactNumber: "",
     address: "",
+    accountNumber: "",
     dateOfBirth: "",
     gender: "",
     employeeId: "",
@@ -51,6 +52,7 @@ const PatientUploadForm: React.FC = () => {
     appointmentDateTime: "",
     status: "",
     specialInstructions: "",
+    age: "",
   });
 
   const [image, setImage] = useState<File | null>(null);
@@ -126,6 +128,8 @@ const PatientUploadForm: React.FC = () => {
         appointmentDateTime: "",
         status: "",
         specialInstructions: "",
+        accountNumber: "",
+        age: "",
       });
       setImage(null);
       setImagePreviewUrl(null);
@@ -188,9 +192,21 @@ const PatientUploadForm: React.FC = () => {
             type="email"
           />
           <InputField
+            name="age"
+            label="Age"
+            value={formData.age}
+            onChange={handleChange}
+          />
+          <InputField
             name="contactNumber"
             label="Contact Number"
             value={formData.contactNumber}
+            onChange={handleChange}
+          />
+          <InputField
+            name="accountNumber"
+            label="Account Number"
+            value={formData.accountNumber}
             onChange={handleChange}
           />
           <InputField
@@ -251,10 +267,52 @@ const PatientUploadForm: React.FC = () => {
               <option value="" disabled>
                 Select Laboratory
               </option>
-              <option value="XYZ Lab">XYZ Lab</option>
-              <option value="ABC Diagnostic">ABC Diagnostic</option>
-              <option value="HealthCare Clinic">HealthCare Clinic</option>
-              <option value="MedTest Center">MedTest Center</option>
+              <option value="Natera">Natera</option>
+              <option value="Caredx">Caredx</option>
+              <option value="Prosecco study">Prosecco study</option>
+              <option value="Assisted Living">Assisted Living</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Priority Level
+            </label>
+            <select
+              name="priorityLevel"
+              value={formData.priorityLevel}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            >
+              <option value="" disabled>
+                Select Priority Level
+              </option>
+              <option value="Urgent">Urgent</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            >
+              <option value="" disabled>
+                Select Status
+              </option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+              <option value="Rejected">Rejected</option>
             </select>
           </div>
 
@@ -264,12 +322,7 @@ const PatientUploadForm: React.FC = () => {
             value={formData.fees}
             onChange={handleChange}
           />
-          <InputField
-            name="priorityLevel"
-            label="Priority Level"
-            value={formData.priorityLevel}
-            onChange={handleChange}
-          />
+
           <InputField
             name="appointmentDateTime"
             label="Date & Time"
@@ -277,13 +330,6 @@ const PatientUploadForm: React.FC = () => {
             value={formData.appointmentDateTime}
             onChange={handleChange}
           />
-          <InputField
-            name="status"
-            label="Status"
-            value={formData.status}
-            onChange={handleChange}
-          />
-
           {/* Special Instructions */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

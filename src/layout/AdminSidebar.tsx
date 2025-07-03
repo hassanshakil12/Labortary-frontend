@@ -79,7 +79,7 @@ const navItems: NavItem[] = [
         className="w-5 h-5"
       />
     ),
-    name: "Archeive",
+    name: "Archive",
     path: "/archeive",
   },
 ];
