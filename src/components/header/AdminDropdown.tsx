@@ -29,8 +29,10 @@ export default function UserDropdown() {
           }
         );
 
-        if (response?.data?.data?.profileImage) {
-          setProfileImage(response.data.data.profileImage);
+        console.log("User profile response:", response.data.data.image);
+
+        if (response?.data?.data?.image) {
+          setProfileImage(response.data.data.image);
         }
       } catch (error) {
         console.error("Failed to fetch user profile image:", error);

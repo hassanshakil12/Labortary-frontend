@@ -57,7 +57,10 @@ const ProfilePage = () => {
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg">
             <img
-              src={profile.image || "./images/profile_img.svg"}
+              src={
+                `${import.meta.env.VITE_API_BASE_URL}/${profile.image}` ||
+                "./images/profile_img.svg"
+              }
               alt="Profile"
               className="w-full h-full object-cover"
               onError={(e) => {

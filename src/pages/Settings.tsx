@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+
+export const EyeIcon = AiOutlineEye;
+export const EyeCloseIcon = AiOutlineEyeInvisible;
 
 const Settings = () => {
   const [settings, setSettings] = useState({
@@ -23,6 +27,8 @@ const Settings = () => {
     newPassword: "",
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const token = localStorage.getItem("userAuthToken");
 
@@ -98,7 +104,6 @@ const Settings = () => {
       "address",
       "gender",
       "username",
-      "about",
     ];
     if (form?.role === "admin") required.push("jobRole", "hireDate");
     for (const field of required) {
@@ -288,60 +293,38 @@ const Settings = () => {
                 </select>
               </div>
 
-              <div className="md:col-span-2">
+              <div>
                 <label
-                  htmlFor="about"
+                  htmlFor="jobRole"
                   className="text-sm font-medium block mb-1"
                 >
-                  About
+                  Job Role
                 </label>
-                <textarea
-                  id="about"
-                  name="about"
-                  value={form.about || ""}
+                <input
+                  id="jobRole"
+                  name="jobRole"
+                  value={form.jobRole || ""}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
-                  rows={3}
-                  placeholder="About"
+                  placeholder="Job Role"
                 />
               </div>
-
-              {form?.role === "admin" && (
-                <>
-                  <div>
-                    <label
-                      htmlFor="jobRole"
-                      className="text-sm font-medium block mb-1"
-                    >
-                      Job Role
-                    </label>
-                    <input
-                      id="jobRole"
-                      name="jobRole"
-                      value={form.jobRole || ""}
-                      onChange={handleChange}
-                      className="border p-2 rounded w-full"
-                      placeholder="Job Role"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="hireDate"
-                      className="text-sm font-medium block mb-1"
-                    >
-                      Hire Date
-                    </label>
-                    <input
-                      id="hireDate"
-                      name="hireDate"
-                      type="date"
-                      value={form.hireDate?.slice(0, 10) || ""}
-                      onChange={handleChange}
-                      className="border p-2 rounded w-full"
-                    />
-                  </div>
-                </>
-              )}
+              <div>
+                <label
+                  htmlFor="hireDate"
+                  className="text-sm font-medium block mb-1"
+                >
+                  Hire Date
+                </label>
+                <input
+                  id="hireDate"
+                  name="hireDate"
+                  type="date"
+                  value={form.hireDate?.slice(0, 10) || ""}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-6">
@@ -369,41 +352,72 @@ const Settings = () => {
           <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-xl">
             <h2 className="text-xl font-semibold mb-6">Change Password</h2>
             <div className="space-y-4">
-              <div>
+              <div className="mb-4">
                 <label
                   htmlFor="oldPassword"
                   className="block text-sm font-medium mb-1"
                 >
                   Old Password
                 </label>
-                <input
-                  type="password"
-                  id="oldPassword"
-                  value={passwords.oldPassword}
-                  onChange={(e) =>
-                    setPasswords({ ...passwords, oldPassword: e.target.value })
-                  }
-                  className="border p-2 rounded w-full"
-                  placeholder="Old Password"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    id="oldPassword"
+                    value={passwords.oldPassword}
+                    onChange={(e) =>
+                      setPasswords({
+                        ...passwords,
+                        oldPassword: e.target.value,
+                      })
+                    }
+                    className="border p-2 rounded w-full pr-10 outline-0"
+                    placeholder="Old Password"
+                  />
+                  <span
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute right-3 cursor-pointer"
+                  >
+                    {showOldPassword ? (
+                      <EyeIcon className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <EyeCloseIcon className="w-5 h-5 text-gray-500" />
+                    )}
+                  </span>
+                </div>
               </div>
-              <div>
+
+              <div className="mb-4">
                 <label
                   htmlFor="newPassword"
                   className="block text-sm font-medium mb-1"
                 >
                   New Password
                 </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={passwords.newPassword}
-                  onChange={(e) =>
-                    setPasswords({ ...passwords, newPassword: e.target.value })
-                  }
-                  className="border p-2 rounded w-full"
-                  placeholder="New Password"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    id="newPassword"
+                    value={passwords.newPassword}
+                    onChange={(e) =>
+                      setPasswords({
+                        ...passwords,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    className="border p-2 rounded w-full pr-10 outline-0"
+                    placeholder="New Password"
+                  />
+                  <span
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 cursor-pointer"
+                  >
+                    {showNewPassword ? (
+                      <EyeIcon className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <EyeCloseIcon className="w-5 h-5 text-gray-500" />
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-6">

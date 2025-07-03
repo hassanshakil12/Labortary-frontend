@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { EyeCloseIcon, EyeIcon } from "../../icons";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+
+export const EyeIcon = AiOutlineEye;
+export const EyeCloseIcon = AiOutlineEyeInvisible;
+
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
@@ -16,6 +20,7 @@ const LoginPage = () => {
     newPassword: "",
     userId: "",
   });
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const handleChange = (e: { target: { name: any; value: any } }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -161,7 +166,7 @@ const LoginPage = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Email"
-              className="w-full px-4 py-2 border-b-2 border-gray-400 bg-transparent mb-4"
+              className="w-full px-4 py-2 border-b-2 border-gray-400 bg-transparent mb-4 outline-0"
             />
 
             <div className="relative mb-4">
@@ -171,7 +176,7 @@ const LoginPage = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password"
-                className="w-full px-4 py-2 border-b-2 border-gray-400 bg-transparent"
+                className="w-full px-4 py-2 border-b-2 border-gray-400 bg-transparent outline-0"
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
@@ -206,7 +211,6 @@ const LoginPage = () => {
 
       {/* Forgot Password Modal */}
       {showForgotModal && (
-        // <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-6">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             {forgotStep === 1 && (
@@ -221,14 +225,14 @@ const LoginPage = () => {
                   onChange={(e) =>
                     setForgotData({ ...forgotData, email: e.target.value })
                   }
-                  className="w-full px-4 py-2 border mb-4"
+                  className="w-full px-4 py-2 border mb-4 outline-0"
                 />
                 <select
                   value={forgotData.role}
                   onChange={(e) =>
                     setForgotData({ ...forgotData, role: e.target.value })
                   }
-                  className="w-full px-4 py-2 border mb-4"
+                  className="w-full px-4 py-2 border mb-4  outline-0"
                 >
                   <option value="employee">Employee</option>
                   <option value="admin">Admin</option>
@@ -253,7 +257,7 @@ const LoginPage = () => {
                   onChange={(e) =>
                     setForgotData({ ...forgotData, otp: e.target.value })
                   }
-                  className="w-full px-4 py-2 border mb-4"
+                  className="w-full px-4 py-2 border mb-4 outline-0"
                 />
                 <button
                   className="bg-blue-600 text-white w-full py-2 rounded"
@@ -268,18 +272,31 @@ const LoginPage = () => {
                 <h3 className="text-lg font-semibold mb-4">
                   Enter New Password
                 </h3>
-                <input
-                  type="password"
-                  placeholder="New Password"
-                  value={forgotData.newPassword}
-                  onChange={(e) =>
-                    setForgotData({
-                      ...forgotData,
-                      newPassword: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 border mb-4"
-                />
+                <div className="relative mb-4">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="New Password"
+                    value={forgotData.newPassword}
+                    onChange={(e) =>
+                      setForgotData({
+                        ...forgotData,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border outline-0"
+                  />
+                  <span
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                  >
+                    {showNewPassword ? (
+                      <EyeIcon className="w-4 h-4 text-gray-500" />
+                    ) : (
+                      <EyeCloseIcon className="w-4 h-4 text-gray-500" />
+                    )}
+                  </span>
+                </div>
+
                 <button
                   className="bg-blue-600 text-white w-full py-2 rounded"
                   onClick={handleResetPassword}

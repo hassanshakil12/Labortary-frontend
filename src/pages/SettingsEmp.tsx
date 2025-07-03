@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+
+export const EyeIcon = AiOutlineEye;
+export const EyeCloseIcon = AiOutlineEyeInvisible;
 
 const SettingsEmp = () => {
   const [settings, setSettings] = useState({
@@ -23,6 +27,8 @@ const SettingsEmp = () => {
     newPassword: "",
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const token = localStorage.getItem("userAuthToken");
 
@@ -369,41 +375,72 @@ const SettingsEmp = () => {
           <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-xl">
             <h2 className="text-xl font-semibold mb-6">Change Password</h2>
             <div className="space-y-4">
-              <div>
+              <div className="mb-4">
                 <label
                   htmlFor="oldPassword"
                   className="block text-sm font-medium mb-1"
                 >
                   Old Password
                 </label>
-                <input
-                  type="password"
-                  id="oldPassword"
-                  value={passwords.oldPassword}
-                  onChange={(e) =>
-                    setPasswords({ ...passwords, oldPassword: e.target.value })
-                  }
-                  className="border p-2 rounded w-full"
-                  placeholder="Old Password"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    id="oldPassword"
+                    value={passwords.oldPassword}
+                    onChange={(e) =>
+                      setPasswords({
+                        ...passwords,
+                        oldPassword: e.target.value,
+                      })
+                    }
+                    className="border p-2 rounded w-full pr-10 outline-0"
+                    placeholder="Old Password"
+                  />
+                  <span
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute right-3 cursor-pointer"
+                  >
+                    {showOldPassword ? (
+                      <EyeIcon className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <EyeCloseIcon className="w-5 h-5 text-gray-500" />
+                    )}
+                  </span>
+                </div>
               </div>
-              <div>
+
+              <div className="mb-4">
                 <label
                   htmlFor="newPassword"
                   className="block text-sm font-medium mb-1"
                 >
                   New Password
                 </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={passwords.newPassword}
-                  onChange={(e) =>
-                    setPasswords({ ...passwords, newPassword: e.target.value })
-                  }
-                  className="border p-2 rounded w-full"
-                  placeholder="New Password"
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    id="newPassword"
+                    value={passwords.newPassword}
+                    onChange={(e) =>
+                      setPasswords({
+                        ...passwords,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    className="border p-2 rounded w-full pr-10 outline-0"
+                    placeholder="New Password"
+                  />
+                  <span
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 cursor-pointer"
+                  >
+                    {showNewPassword ? (
+                      <EyeIcon className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <EyeCloseIcon className="w-5 h-5 text-gray-500" />
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-6">
