@@ -10,6 +10,8 @@ const Appointments = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [trackingFile, setTrackingFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleView = (patient: any) => {
     setSelectedPatient(patient);
@@ -21,6 +23,45 @@ const Appointments = () => {
     setModalOpen(false);
     setSelectedPatient(null);
     document.body.style.overflow = "auto";
+    setTrackingFile(null);
+  };
+
+  const handleTrackingUpload = async () => {
+    if (!selectedPatient?._id || !trackingFile) {
+      toast.error("No file selected or patient data missing");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", trackingFile);
+
+    try {
+      setUploading(true);
+      const token = localStorage.getItem("userAuthToken");
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/upload-tracking/${
+          selectedPatient._id
+        }`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      toast.success("Tracking ID uploaded successfully");
+      setSelectedPatient(res.data.data);
+      setTrackingFile(null);
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Failed to upload tracking ID";
+      toast.error(message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   useEffect(() => {
@@ -207,8 +248,64 @@ const Appointments = () => {
                     Employee ID:{" "}
                     {selectedPatient.employeeId?.employeeId || "N/A"}
                   </p>
+
+                  {selectedPatient.trackingId ? (
+                    <div className="mt-4">
+                      <p className="font-semibold text-sm mb-1">
+                        Tracking ID Image:
+                      </p>
+                      <img
+                        src={`${import.meta.env.VITE_API_BASE_URL}/${
+                          selectedPatient.trackingId
+                        }`}
+                        alt="Tracking ID"
+                        className="w-full max-h-96 object-contain border rounded shadow"
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-6 flex flex-col items-center">
+                      <p className="font-semibold text-sm mb-3 text-gray-700 text-center">
+                        Upload Tracking ID:
+                      </p>
+
+                      <div className="flex flex-col items-center gap-4 bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200 w-full max-w-xs">
+                        {trackingFile && (
+                          <img
+                            src={URL.createObjectURL(trackingFile)}
+                            alt="Preview"
+                            className="w-24 h-24 rounded-full object-cover border-2 border-blue-400 shadow-md transition-transform hover:scale-105"
+                          />
+                        )}
+
+                        <label className="w-full text-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              setTrackingFile(e.target.files?.[0] || null)
+                            }
+                            className="w-full text-sm text-gray-600
+                                     file:mr-4 file:py-1.5 file:px-4
+                                     file:rounded-full file:border-0
+                                     file:text-sm file:font-semibold
+                                     file:bg-blue-100 file:text-blue-700
+                                     hover:file:bg-blue-200 cursor-pointer"
+                          />
+                        </label>
+
+                        <button
+                          onClick={handleTrackingUpload}
+                          disabled={uploading || !trackingFile}
+                          className="w-full px-6 py-2 text-sm font-semibold bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition"
+                        >
+                          {uploading ? "Uploading..." : "Upload"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {selectedPatient.documents?.length > 0 && (
-                    <div className="text-sm">
+                    <div className="text-sm mt-4">
                       <p className="font-semibold mb-1">Documents:</p>
                       <ul className="list-disc ml-5 space-y-1">
                         {selectedPatient.documents.map(

@@ -279,6 +279,27 @@ const Appointments = () => {
                       </ul>
                     </div>
                   )}
+                  {selectedPatient.trackingId ? (
+                    <div className="mt-4">
+                      <p className="font-semibold text-sm mb-1">
+                        Tracking ID Image:
+                      </p>
+                      <img
+                        src={`${import.meta.env.VITE_API_BASE_URL}/${
+                          selectedPatient.trackingId
+                        }`}
+                        alt="Tracking ID"
+                        className="w-full max-h-96 object-contain border rounded shadow"
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-4">
+                      <p className="font-semibold text-sm mb-1">
+                        Tracking ID Image:
+                      </p>
+                      <p className="text-sm">No tracking ID image available.</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full mb-4">
