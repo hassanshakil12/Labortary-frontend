@@ -16,7 +16,7 @@ const ProfilePage = () => {
         }
 
         const { data } = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/get-profile`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-profile`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ const ProfilePage = () => {
       <div className="w-full max-w-4xl bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-10 border border-gray-200">
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg">
+          <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-[#0077B6] shadow-lg">
             <img
               src={
                 `${import.meta.env.VITE_API_BASE_URL}/${profile.image}` ||
@@ -81,8 +81,8 @@ const ProfilePage = () => {
               <p>
                 Joined:{" "}
                 <span className="font-semibold">
-                  {profile.hireDate
-                    ? new Date(profile.hireDate).toLocaleDateString("en-US", {
+                  {profile.createdAt
+                    ? new Date(profile.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric",
@@ -103,13 +103,63 @@ const ProfilePage = () => {
           </ProfileSection>
 
           <ProfileSection title="Basic Information">
-            <InfoRow label="Gender" value={profile.gender} />
             <InfoRow label="Department" value={profile.department || "N/A"} />
             <InfoRow
               label="Status"
               value={profile.isActive ? "Online" : "Offline"}
             />
           </ProfileSection>
+        </div>
+        {/* Timing Information */}
+        <div className="w-full bg-white hover:shadow-lg transition-all duration-300 rounded-xl p-6 border border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+            Timing Information
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
+            {[
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday",
+            ].map((day) => {
+              const entry =
+                Array.isArray(profile.timings) &&
+                profile.timings.find((t: { day: string }) => t.day === day);
+
+              const isValid =
+                entry &&
+                Array.isArray(entry.time) &&
+                entry.time.length === 2 &&
+                entry.time[0] &&
+                entry.time[1];
+
+              const formatTime = (t: string) =>
+                new Date(t).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                });
+
+              return (
+                <div
+                  key={day}
+                  className="border border-gray-200 rounded-xl p-4 shadow-sm bg-gray-50"
+                >
+                  <h3 className="text-base font-medium text-gray-600">{day}</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {isValid
+                      ? `${formatTime(entry.time[0])} — ${formatTime(
+                          entry.time[1]
+                        )}`
+                      : "Off Day"}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

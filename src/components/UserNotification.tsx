@@ -48,7 +48,9 @@ const NotificationsPage = () => {
     setDeleting(true);
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/common/delete-notifications`,
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/v1/common/delete-notifications`,
         {},
         {
           headers: {
@@ -71,7 +73,7 @@ const NotificationsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#0077B6]"></div>
         <span className="ml-4 text-lg font-semibold text-gray-600">
           Loading...
         </span>

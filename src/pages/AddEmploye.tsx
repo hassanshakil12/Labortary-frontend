@@ -63,12 +63,57 @@ const AddEmployee: React.FC = () => {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    const today = new Date();
 
     Object.entries(formData).forEach(([key, value]) => {
-      if (!value.trim() && key !== "about") {
+      const trimmedValue = value.trim();
+
+      if (!trimmedValue && key !== "about") {
         newErrors[key] = `${key.replace(/([A-Z])/g, " $1")} is required`;
       }
     });
+
+    if (formData.email && !emailRegex.test(formData.email.trim())) {
+      newErrors.email = "Invalid email format";
+    }
+
+    if (
+      formData.contactNumber &&
+      !phoneRegex.test(formData.contactNumber.trim())
+    ) {
+      newErrors.contactNumber = "Invalid contact number format";
+    }
+
+    if (
+      formData.address.trim().length > 0 &&
+      formData.address.trim().length < 5
+    ) {
+      newErrors.address = "Address must be at least 5 characters long";
+    }
+
+    const hireDate = new Date(formData.hireDate);
+    if (formData.hireDate && (isNaN(hireDate.getTime()) || hireDate > today)) {
+      newErrors.hireDate = "Hire date must be valid and not in the future";
+    }
+
+    if (formData.password && formData.password.trim().length < 8) {
+      newErrors.password = "Password must be at least 8 characters long";
+    }
+
+    const validGenders = ["Male", "Female", "Other"];
+    if (formData.gender && !validGenders.includes(formData.gender)) {
+      newErrors.gender = "Invalid gender selected";
+    }
+
+    const validDepartments = ["Laboratory", "Radiology", "Pharmacy", "Admin"];
+    if (
+      formData.department &&
+      !validDepartments.includes(formData.department)
+    ) {
+      newErrors.department = "Invalid department selected";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -223,7 +268,7 @@ const AddEmployee: React.FC = () => {
               value={formData.department}
               onChange={handleChange}
               className={`w-full px-4 py-2 border ${
-                errors.gender ? "border-red-500" : "border-gray-300"
+                errors.department ? "border-red-500" : "border-gray-300"
               } rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
             >
               <option value="" disabled>
@@ -234,8 +279,8 @@ const AddEmployee: React.FC = () => {
               <option value="Pharmacy">Pharmacy</option>
               <option value="Admin">Admin</option>
             </select>
-            {errors.gender && (
-              <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+            {errors.department && (
+              <p className="text-red-500 text-xs mt-1">{errors.department}</p>
             )}
           </div>
         </div>
@@ -287,10 +332,10 @@ const AddEmployee: React.FC = () => {
               <option value="" disabled>
                 Select Shift
               </option>
-              <option value="morning">Morning (8AM - 4PM)</option>
-              <option value="evening">Evening (4PM - 12AM)</option>
-              <option value="night">Night (12AM - 8AM)</option>
-              <option value="custom">Custom</option>
+              <option value="Morning">Morning (8AM - 4PM)</option>
+              <option value="Evening">Evening (4PM - 12AM)</option>
+              <option value="Night">Night (12AM - 8AM)</option>
+              <option value="Custom">Custom</option>
             </select>
             {errors.shiftTiming && (
               <p className="text-red-500 text-xs mt-1">{errors.shiftTiming}</p>
@@ -351,6 +396,23 @@ const AddEmployee: React.FC = () => {
         <button
           type="button"
           className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition"
+          onClick={() => {
+            setFormData({
+              fullName: "",
+              email: "",
+              contactNumber: "",
+              address: "",
+              hireDate: "",
+              employeeId: "",
+              username: "",
+              password: "",
+              jobRole: "",
+              shiftTiming: "",
+              about: "",
+              gender: "",
+              department: "",
+            });
+          }}
         >
           Cancel
         </button>

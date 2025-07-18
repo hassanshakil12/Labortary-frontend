@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
-import { ChevronDownIcon, HorizontaLDots } from "../icons";
+import { ChevronDownIcon, GridIcon, HorizontaLDots } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 
@@ -17,77 +17,23 @@ const navItems: NavItem[] = [
     icon: (
       <img
         src="./images/dashboard-icon.png"
-        alt="Dashboard"
+        alt="Leaderboard"
         className="w-5 h-5"
       />
     ),
     name: "Dashboard",
-    path: "/admin-dashboard",
+    path: "/laboratory-dashboard",
   },
   {
     icon: (
       <img
         src="./images/appointment-icon.png"
-        alt="Appointments"
+        alt="appointments"
         className="w-5 h-5"
       />
     ),
     name: "Appointments",
-    path: "/appointments",
-  },
-  {
-    icon: (
-      <img
-        src="./images/cr-app-icon.png"
-        alt="Create Appointments"
-        className="w-5 h-5"
-      />
-    ),
-    name: "Create Appointments",
-    path: "/create-appointments",
-  },
-  {
-    icon: (
-      <img
-        src="./images/cr-app-icon.png"
-        alt="Create Appointments"
-        className="w-5 h-5"
-      />
-    ),
-    name: "Add Laboratory",
-    path: "/add-laboratory",
-  },
-  {
-    icon: (
-      <img src="./images/add-employee.png" alt="Archive" className="w-5 h-5" />
-    ),
-    name: "Add Employee",
-    path: "/add-employee",
-  },
-  {
-    icon: (
-      <img src="./images/employees.png" alt="Archive" className="w-5 h-5" />
-    ),
-    name: "Employees",
-    path: "/employees",
-  },
-  {
-    icon: (
-      <img src="./images/employees.png" alt="Archive" className="w-5 h-5" />
-    ),
-    name: "Laboratories",
-    path: "/laboratories",
-  },
-  {
-    icon: (
-      <img
-        src="./images/payment-icon.png"
-        alt="Salesperson"
-        className="w-5 h-5"
-      />
-    ),
-    name: "Payment",
-    path: "/add-payment",
+    path: "/laboratory-appointments",
   },
   {
     icon: (
@@ -97,22 +43,8 @@ const navItems: NavItem[] = [
         className="w-5 h-5"
       />
     ),
-    name: "Archive",
-    path: "/archeive",
-  },
-];
-
-const bottomNavItems: NavItem[] = [
-  {
-    icon: (
-      <img
-        src="./images/settings-icon.png"
-        alt="Settings"
-        className="w-5 h-5"
-      />
-    ),
-    name: "Settings",
-    path: "/settings",
+    name: "Archeive",
+    path: "/laboratory-archeive",
   },
 ];
 
@@ -147,6 +79,19 @@ const othersItems: NavItem[] = [
   // },
 ];
 
+const bottomNavItems: NavItem[] = [
+  {
+    icon: (
+      <img
+        src="./images/settings-icon.png"
+        alt="Settings"
+        className="w-5 h-5"
+      />
+    ),
+    name: "Settings",
+    path: "/laboratory-settings",
+  },
+];
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
@@ -160,6 +105,7 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -353,7 +299,7 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex ${
+        className={`py-8 items-center flex ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
@@ -371,7 +317,13 @@ const AppSidebar: React.FC = () => {
             <img src="/images/LOGO.png" alt="Logo" width={32} height={32} />
           )}
         </Link>
+        {/* <div className="flex items-center hidden sm:flex">
+          <button className="rounded-3xl text-sm border border-[#0077B6] px-3 py-2 -mt-6">
+            Employee
+          </button>
+        </div> */}
       </div>
+
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
@@ -394,7 +346,6 @@ const AppSidebar: React.FC = () => {
             <div className="mt-14 border-gray-300 pt-6">
               {renderMenuItems(bottomNavItems, "main")}
             </div>
-
             {/* <div className="">
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${

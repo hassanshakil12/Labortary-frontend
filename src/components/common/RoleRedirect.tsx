@@ -8,6 +8,8 @@ const RoleRedirect = () => {
   if (!valid || !role) return <Navigate to="/signin" replace />;
 
   if (role === "admin") return <Navigate to="/admin-dashboard" replace />;
+  if (role === "laboratory")
+    return <Navigate to="/laboratory-dashboard" replace />;
   if (role === "employee")
     return <Navigate to="/employees-dashboard" replace />;
 

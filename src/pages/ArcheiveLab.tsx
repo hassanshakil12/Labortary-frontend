@@ -15,13 +15,11 @@ const Archeive = () => {
   const [statusFilterInput, setStatusFilterInput] = useState("");
   const [priorityFilterInput, setPriorityFilterInput] = useState("");
   const [labortaryFilterInput, setLabortaryFilterInput] = useState("");
-  const [employeeIdFilterInput, setEmployeeIdFilterInput] = useState("");
   const [dateFilterInput, setDateFilterInput] = useState("");
   const [filters, setFilters] = useState({
     status: "",
     priorityLevel: "",
     labortary: "",
-    employeeId: "",
     dateAndTime: "",
     sortFields: "createdAt",
     sortOrder: -1,
@@ -29,14 +27,12 @@ const Archeive = () => {
   const [sortFieldInput, setSortFieldInput] = useState("createdAt");
   const [sortOrderInput, setSortOrderInput] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
-  const [employees, setEmployees] = useState<any[]>([]);
 
   const handleApplyFilters = () => {
     setFilters({
       status: statusFilterInput,
       priorityLevel: priorityFilterInput,
       labortary: labortaryFilterInput,
-      employeeId: employeeIdFilterInput,
       dateAndTime: dateFilterInput,
       sortFields: sortFieldInput,
       sortOrder: sortOrderInput,
@@ -48,7 +44,6 @@ const Archeive = () => {
     setStatusFilterInput("");
     setPriorityFilterInput("");
     setLabortaryFilterInput("");
-    setEmployeeIdFilterInput("");
     setDateFilterInput("");
     setSortFieldInput("createdAt");
     setSortOrderInput(-1);
@@ -57,7 +52,6 @@ const Archeive = () => {
       status: "",
       priorityLevel: "",
       labortary: "",
-      employeeId: "",
       dateAndTime: "",
       sortFields: "createdAt",
       sortOrder: -1,
@@ -88,7 +82,6 @@ const Archeive = () => {
           priorityLevel: filters.priorityLevel,
         }),
         ...(filters.labortary && { labortary: filters.labortary }),
-        ...(filters.employeeId && { employeeId: filters.employeeId }),
         ...(filters.dateAndTime && { dateAndTime: filters.dateAndTime }),
         ...(filters.sortFields && { sortFields: filters.sortFields }),
         ...(filters.sortOrder !== undefined && {
@@ -99,7 +92,7 @@ const Archeive = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_API_BASE_URL
-        }/api/v1/admin/get-archeived?${queryParams.toString()}`,
+        }/api/v1/laboratory/get-archived?${queryParams.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -117,23 +110,6 @@ const Archeive = () => {
     }
   };
 
-  const fetchEmployees = async () => {
-    try {
-      const token = localStorage.getItem("userAuthToken");
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-employees`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setEmployees(res.data.data || []);
-    } catch (err: any) {
-      toast.error("Failed to load employees");
-    }
-  };
-
   useEffect(() => {
     fetchAppointments();
   }, [page]);
@@ -141,10 +117,6 @@ const Archeive = () => {
   useEffect(() => {
     fetchAppointments();
   }, [filters]);
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
 
   if (loading) {
     return (
@@ -269,37 +241,6 @@ const Archeive = () => {
               </select>
             </div>
 
-            {/* Employee ID Filter */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Employee ID
-              </label>
-              <select
-                name="employeeId"
-                value={employeeIdFilterInput}
-                onChange={(e) => setEmployeeIdFilterInput(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
-                required
-              >
-                {employees.length > 0 ? (
-                  <>
-                    <option value="" disabled>
-                      Select an employee
-                    </option>
-                    {employees.map((emp) => (
-                      <option key={emp._id} value={emp.employeeId}>
-                        {`${emp.employeeId} - ${emp.fullName}`}
-                      </option>
-                    ))}
-                  </>
-                ) : (
-                  <option value="" disabled>
-                    No Employee found
-                  </option>
-                )}
-              </select>
-            </div>
-
             {/* Sort Field */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">
@@ -372,15 +313,16 @@ const Archeive = () => {
             ))}
           </tr>
         </thead>
-        {appointments.length === 0 ? (
-          <tr>
-            <td colSpan={9} className="text-center py-6 text-gray-500">
-              No archived appointments found.
-            </td>
-          </tr>
-        ) : (
-          <tbody className="divide-y divide-gray-200">
-            {appointments.map((item, idx) => (
+
+        <tbody className="divide-y divide-gray-200">
+          {appointments.length === 0 ? (
+            <tr>
+              <td colSpan={9} className="text-center py-6 text-gray-500">
+                No archived appointments found.
+              </td>
+            </tr>
+          ) : (
+            appointments.map((item, idx) => (
               <tr key={item._id}>
                 <td className="py-2 px-1 text-xs md:text-sm text-center">
                   {idx + 1}
@@ -389,11 +331,12 @@ const Archeive = () => {
                   <div className="flex items-center justify-center gap-2">
                     <img
                       src={
-                        `${import.meta.env.VITE_API_BASE_URL}/${item.image}` ||
-                        "./images/profile_img.svg"
+                        item.image
+                          ? `${import.meta.env.VITE_API_BASE_URL}/${item.image}`
+                          : "./images/profile_img.svg"
                       }
                       alt={item.patientName}
-                      className="w-6 h-6 md:w-8 md:h-8 rounded-full"
+                      className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
                     />
                     <span>{item.patientName}</span>
                   </div>
@@ -418,14 +361,17 @@ const Archeive = () => {
                 <td className="py-2 text-xs md:text-sm text-center">
                   <span
                     className={`inline-block px-3 py-1 rounded-3xl text-xs font-semibold ${
-                      item?.status === "Completed"
+                      item.status === "Completed"
                         ? "bg-green-100 text-green-700"
-                        : item?.status === "Rejected"
+                        : item.status === "Rejected"
                         ? "bg-red-100 text-red-700"
                         : "bg-yellow-100 text-yellow-700"
                     }`}
                   >
-                    {item?.status}
+                    {item.status
+                      ? item.status.charAt(0).toUpperCase() +
+                        item.status.slice(1)
+                      : "Pending"}
                   </span>
                 </td>
                 <td className="py-2 px-1 text-xs md:text-sm text-center">
@@ -437,9 +383,9 @@ const Archeive = () => {
                   </span>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        )}
+            ))
+          )}
+        </tbody>
       </table>
 
       {appointments.length > 0 && (

@@ -44,7 +44,11 @@ const LoginPage = () => {
         navigate(
           result.data.role === "admin"
             ? "/admin-dashboard"
-            : "/employees-dashboard"
+            : result.data.role === "employee"
+            ? "/employees-dashboard"
+            : result.data.role === "laboratory"
+            ? "/laboratory-dashboard"
+            : toast.error("Invalid role")
         );
       } else {
         toast.error(result.message || "Login failed.");
@@ -191,7 +195,7 @@ const LoginPage = () => {
             </div>
 
             <button
-              className="bg-[#0077B6] text-white font-bold py-2 rounded-full w-56 mx-auto"
+              className="bg-[#0077B6] hover:bg-[#005f8f] transition-all duration-300 text-white font-bold py-2 rounded w-56 mx-auto"
               onClick={handleSignIn}
             >
               Login
@@ -234,11 +238,12 @@ const LoginPage = () => {
                   }
                   className="w-full px-4 py-2 border mb-4  outline-0"
                 >
-                  <option value="employee">Employee</option>
                   <option value="admin">Admin</option>
+                  <option value="laboratory">Laboratory</option>
+                  <option value="employee">Employee</option>
                 </select>
                 <button
-                  className="bg-blue-600 text-white w-full py-2 rounded"
+                  className="bg-[#0077B6] hover:bg-[#005f8f] transition-all duration-300 text-white w-full py-2 rounded"
                   onClick={handleForgotSubmit}
                 >
                   Send OTP
@@ -260,7 +265,7 @@ const LoginPage = () => {
                   className="w-full px-4 py-2 border mb-4 outline-0"
                 />
                 <button
-                  className="bg-blue-600 text-white w-full py-2 rounded"
+                  className="bg-[#0077B6] hover:bg-[#005f8f] transition-all duration-300 text-white w-full py-2 rounded"
                   onClick={handleVerifyOTP}
                 >
                   Verify OTP
@@ -298,7 +303,7 @@ const LoginPage = () => {
                 </div>
 
                 <button
-                  className="bg-blue-600 text-white w-full py-2 rounded"
+                  className="bg-[#0077B6] hover:bg-[#005f8f] transition-all duration-300 text-white w-full py-2 rounded"
                   onClick={handleResetPassword}
                 >
                   Reset Password

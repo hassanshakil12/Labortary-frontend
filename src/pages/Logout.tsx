@@ -1,46 +1,73 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const Logout = () => {
   const navigate = useNavigate();
-  const [isLoggingOut, setIsLoggingOut] = useState(true);
+  const [status, setStatus] = useState<"logging-out" | "done" | "error">(
+    "logging-out"
+  );
+  const logoutCalled = useRef(false);
 
-  useEffect(() => {
-    const logout = async () => {
-      const token = localStorage.getItem("userAuthToken");
+  const logout = async () => {
+    if (logoutCalled.current) return;
+    logoutCalled.current = true;
 
-      try {
-        await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/sign-out`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      } catch (error) {
-        console.error("Logout failed:", error);
+    const token = localStorage.getItem("userAuthToken");
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/sign-out`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 5000,
+        }
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Unexpected response from server");
       }
 
-      localStorage.removeItem("userAuthToken");
+      setStatus("done");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed. You'll still be signed out locally.");
+      setStatus("error");
+    } finally {
+      localStorage.clear();
+      sessionStorage.clear();
+
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
+      });
+
       setTimeout(() => {
         navigate("/", { replace: true });
-      }, 1000); // Delay to show loader for at least 1s
-    };
+      }, 1000);
+    }
+  };
 
+  useEffect(() => {
     logout();
   }, [navigate]);
 
-  return isLoggingOut ? (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+  return (
+    <div className="fixed inset-0 z-[9999999] flex items-center justify-center bg-white">
+      <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#0077B6]"></div>
       <span className="ml-4 text-lg font-semibold text-gray-600">
-        Logging out...
+        {status === "logging-out"
+          ? "Logging out..."
+          : status === "error"
+          ? "Logout failed. Redirecting..."
+          : "Goodbye..."}
       </span>
     </div>
-  ) : null;
+  );
 };
 
 export default Logout;

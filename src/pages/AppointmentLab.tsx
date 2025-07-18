@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const Archeive = () => {
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+const Appointments = () => {
   const [isModalOpen, setModalOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [statusMap, setStatusMap] = useState<{ [key: string]: string }>({});
+  const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -15,13 +15,11 @@ const Archeive = () => {
   const [statusFilterInput, setStatusFilterInput] = useState("");
   const [priorityFilterInput, setPriorityFilterInput] = useState("");
   const [labortaryFilterInput, setLabortaryFilterInput] = useState("");
-  const [employeeIdFilterInput, setEmployeeIdFilterInput] = useState("");
   const [dateFilterInput, setDateFilterInput] = useState("");
   const [filters, setFilters] = useState({
     status: "",
     priorityLevel: "",
     labortary: "",
-    employeeId: "",
     dateAndTime: "",
     sortFields: "createdAt",
     sortOrder: -1,
@@ -30,40 +28,6 @@ const Archeive = () => {
   const [sortOrderInput, setSortOrderInput] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
-
-  const handleApplyFilters = () => {
-    setFilters({
-      status: statusFilterInput,
-      priorityLevel: priorityFilterInput,
-      labortary: labortaryFilterInput,
-      employeeId: employeeIdFilterInput,
-      dateAndTime: dateFilterInput,
-      sortFields: sortFieldInput,
-      sortOrder: sortOrderInput,
-    });
-    setPage(1);
-  };
-
-  const handleClearFilters = () => {
-    setStatusFilterInput("");
-    setPriorityFilterInput("");
-    setLabortaryFilterInput("");
-    setEmployeeIdFilterInput("");
-    setDateFilterInput("");
-    setSortFieldInput("createdAt");
-    setSortOrderInput(-1);
-
-    setFilters({
-      status: "",
-      priorityLevel: "",
-      labortary: "",
-      employeeId: "",
-      dateAndTime: "",
-      sortFields: "createdAt",
-      sortOrder: -1,
-    });
-    setPage(1);
-  };
 
   const handleView = (patient: any) => {
     setSelectedPatient(patient);
@@ -77,6 +41,37 @@ const Archeive = () => {
     document.body.style.overflow = "auto";
   };
 
+  const handleApplyFilters = () => {
+    setFilters({
+      status: statusFilterInput,
+      priorityLevel: priorityFilterInput,
+      labortary: labortaryFilterInput,
+      dateAndTime: dateFilterInput,
+      sortFields: sortFieldInput,
+      sortOrder: sortOrderInput,
+    });
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setStatusFilterInput("");
+    setPriorityFilterInput("");
+    setLabortaryFilterInput("");
+    setDateFilterInput("");
+    setSortFieldInput("createdAt");
+    setSortOrderInput(-1);
+
+    setFilters({
+      status: "",
+      priorityLevel: "",
+      labortary: "",
+      dateAndTime: "",
+      sortFields: "createdAt",
+      sortOrder: -1,
+    });
+    setPage(1);
+  };
+
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -84,11 +79,8 @@ const Archeive = () => {
       const queryParams = new URLSearchParams({
         page: String(page),
         ...(filters.status && { status: filters.status }),
-        ...(filters.priorityLevel && {
-          priorityLevel: filters.priorityLevel,
-        }),
+        ...(filters.priorityLevel && { priorityLevel: filters.priorityLevel }),
         ...(filters.labortary && { labortary: filters.labortary }),
-        ...(filters.employeeId && { employeeId: filters.employeeId }),
         ...(filters.dateAndTime && { dateAndTime: filters.dateAndTime }),
         ...(filters.sortFields && { sortFields: filters.sortFields }),
         ...(filters.sortOrder !== undefined && {
@@ -99,7 +91,7 @@ const Archeive = () => {
       const response = await axios.get(
         `${
           import.meta.env.VITE_API_BASE_URL
-        }/api/v1/admin/get-archeived?${queryParams.toString()}`,
+        }/api/v1/laboratory/get-appointments?${queryParams.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -117,23 +109,6 @@ const Archeive = () => {
     }
   };
 
-  const fetchEmployees = async () => {
-    try {
-      const token = localStorage.getItem("userAuthToken");
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-employees`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setEmployees(res.data.data || []);
-    } catch (err: any) {
-      toast.error("Failed to load employees");
-    }
-  };
-
   useEffect(() => {
     fetchAppointments();
   }, [page]);
@@ -141,10 +116,6 @@ const Archeive = () => {
   useEffect(() => {
     fetchAppointments();
   }, [filters]);
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
 
   if (loading) {
     return (
@@ -167,7 +138,7 @@ const Archeive = () => {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-sm overflow-x-auto">
-      <h1 className="text-center text-xl my-3 font-bold">Archive</h1>
+      <h1 className="text-center text-xl my-3 font-bold">Appointments</h1>
 
       <div className="flex justify-start mb-4">
         <button
@@ -227,6 +198,7 @@ const Archeive = () => {
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
                 <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>
                 <option value="Rejected">Rejected</option>
               </select>
@@ -266,37 +238,6 @@ const Archeive = () => {
                 <option value="Prosecco study">Prosecco study</option>
                 <option value="Assisted Living">Assisted Living</option>
                 <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Employee ID Filter */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Employee ID
-              </label>
-              <select
-                name="employeeId"
-                value={employeeIdFilterInput}
-                onChange={(e) => setEmployeeIdFilterInput(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
-                required
-              >
-                {employees.length > 0 ? (
-                  <>
-                    <option value="" disabled>
-                      Select an employee
-                    </option>
-                    {employees.map((emp) => (
-                      <option key={emp._id} value={emp.employeeId}>
-                        {`${emp.employeeId} - ${emp.fullName}`}
-                      </option>
-                    ))}
-                  </>
-                ) : (
-                  <option value="" disabled>
-                    No Employee found
-                  </option>
-                )}
               </select>
             </div>
 
@@ -362,12 +303,12 @@ const Archeive = () => {
               "Instruction",
               "Status",
               "Action",
-            ].map((head, i) => (
+            ].map((heading) => (
               <th
-                key={i}
+                key={heading}
                 className="py-2 px-1 text-xs md:text-sm font-medium text-gray-500 uppercase text-center"
               >
-                {head}
+                {heading}
               </th>
             ))}
           </tr>
@@ -375,63 +316,46 @@ const Archeive = () => {
         {appointments.length === 0 ? (
           <tr>
             <td colSpan={9} className="text-center py-6 text-gray-500">
-              No archived appointments found.
+              No appointments scheduled.
             </td>
           </tr>
         ) : (
           <tbody className="divide-y divide-gray-200">
-            {appointments.map((item, idx) => (
+            {appointments.map((item, i) => (
               <tr key={item._id}>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
-                  {idx + 1}
-                </td>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
+                <td className="py-2 px-1 text-center">{i + 1}</td>
+                <td className="py-2 px-1 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <img
-                      src={
-                        `${import.meta.env.VITE_API_BASE_URL}/${item.image}` ||
-                        "./images/profile_img.svg"
-                      }
+                      src={`${import.meta.env.VITE_API_BASE_URL}/${
+                        item.image || "images/profile_img.svg"
+                      }`}
                       alt={item.patientName}
-                      className="w-6 h-6 md:w-8 md:h-8 rounded-full"
+                      className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
                     />
                     <span>{item.patientName}</span>
                   </div>
                 </td>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
-                  {item.age || "N/A"}
+                <td className="py-2 px-1 text-center">{item.age || "N/A"}</td>
+                <td className="py-2 px-1 text-center">
+                  {new Date(item.appointmentDateTime).toLocaleDateString()}{" "}
+                  {new Date(item.appointmentDateTime).toLocaleTimeString()}
                 </td>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
-                  {new Date(item.appointmentDateTime).toLocaleString()}
-                </td>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
-                  {item.labortary || "N/A"}
-                </td>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
-                  {item.priorityLevel || "Normal"}
-                </td>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
+                <td className="py-2 px-1 text-center">{item.labortary}</td>
+                <td className="py-2 px-1 text-center">{item.priorityLevel}</td>
+                <td className="py-2 px-1 text-center">
                   <span className="inline-block px-2 py-1 text-xs font-medium text-black border border-black rounded-3xl">
-                    {item.specialInstructions || "None"}
+                    {item.specialInstructions}
                   </span>
                 </td>
-                <td className="py-2 text-xs md:text-sm text-center">
-                  <span
-                    className={`inline-block px-3 py-1 rounded-3xl text-xs font-semibold ${
-                      item?.status === "Completed"
-                        ? "bg-green-100 text-green-700"
-                        : item?.status === "Rejected"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {item?.status}
-                  </span>
+                <td className="py-2 px-1 text-center">
+                  {item.status.charAt(0).toUpperCase() +
+                    item.status.slice(1).toLowerCase()}
                 </td>
-                <td className="py-2 px-1 text-xs md:text-sm text-center">
+                <td className="py-2 px-1 text-center">
                   <span
                     onClick={() => handleView(item)}
-                    className="inline-block px-3 py-1 rounded-3xl cursor-pointer text-[#0077B6] hover:underline"
+                    className="inline-block px-3 py-1  rounded-3xl cursor-pointer"
                   >
                     View
                   </span>
@@ -464,7 +388,6 @@ const Archeive = () => {
         </div>
       )}
 
-      {/* Modal */}
       {isModalOpen &&
         selectedPatient &&
         createPortal(
@@ -612,4 +535,4 @@ const Archeive = () => {
   );
 };
 
-export default Archeive;
+export default Appointments;

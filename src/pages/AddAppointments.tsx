@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -53,12 +53,15 @@ const PatientUploadForm: React.FC = () => {
     status: "",
     specialInstructions: "",
     age: "",
+    laboratoryId: "",
   });
 
   const [image, setImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [documents, setDocuments] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [laboratories, setLaboratories] = useState<any[]>([]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -130,6 +133,7 @@ const PatientUploadForm: React.FC = () => {
         specialInstructions: "",
         accountNumber: "",
         age: "",
+        laboratoryId: "",
       });
       setImage(null);
       setImagePreviewUrl(null);
@@ -142,6 +146,48 @@ const PatientUploadForm: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const token = localStorage.getItem("userAuthToken");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-employees`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setEmployees(res.data.data || []);
+      } catch (err: any) {
+        toast.error("Failed to load employees");
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    const fetchLaboratories = async () => {
+      try {
+        const token = localStorage.getItem("userAuthToken");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-laboratories`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setLaboratories(res.data.data || []);
+      } catch (err: any) {
+        toast.error("Failed to load laboratories");
+      }
+    };
+
+    fetchLaboratories();
+  }, []);
 
   return (
     <form
@@ -196,6 +242,7 @@ const PatientUploadForm: React.FC = () => {
             label="Age"
             value={formData.age}
             onChange={handleChange}
+            type="number"
           />
           <InputField
             name="contactNumber"
@@ -237,17 +284,33 @@ const PatientUploadForm: React.FC = () => {
               <option value="" disabled>
                 Select Gender
               </option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="others">Other</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Others">Other</option>
             </select>
           </div>
-          <InputField
-            name="employeeId"
-            label="Assign Employee ID"
-            value={formData.employeeId}
-            onChange={handleChange}
-          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Assign Employee
+            </label>
+            <select
+              name="employeeId"
+              value={formData.employeeId}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            >
+              <option value="" disabled>
+                Select an employee
+              </option>
+              {employees.map((emp) => (
+                <option key={emp._id} value={emp.employeeId}>
+                  {`${emp.employeeId} - ${emp.fullName}`}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Right Column */}
@@ -255,18 +318,46 @@ const PatientUploadForm: React.FC = () => {
           {/* Laboratory Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Laboratory
+              Select Laboratory
             </label>
             <select
               name="labortary"
-              value={formData.labortary}
-              onChange={handleChange}
+              value={formData.labortary || ""}
+              onChange={(e) => {
+                const selectedValue = e.target.value;
+
+                const selectedLab = laboratories.find(
+                  (lab) => lab._id === selectedValue
+                );
+
+                if (selectedLab) {
+                  // From DB
+                  setFormData((prev) => ({
+                    ...prev,
+                    laboratoryId: selectedLab._id,
+                    labortary: selectedLab.fullName,
+                  }));
+                } else {
+                  // From static options
+                  setFormData((prev) => ({
+                    ...prev,
+                    laboratoryId: "",
+                    labortary: selectedValue,
+                  }));
+                }
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               required
             >
               <option value="" disabled>
-                Select Laboratory
+                Select a laboratory
               </option>
+              {laboratories.map((lab) => (
+                <option key={lab._id} value={lab._id}>
+                  {lab.fullName}
+                </option>
+              ))}
+              {/* Static labs */}
               <option value="Natera">Natera</option>
               <option value="Caredx">Caredx</option>
               <option value="Prosecco study">Prosecco study</option>
@@ -321,6 +412,7 @@ const PatientUploadForm: React.FC = () => {
             label="Fees"
             value={formData.fees}
             onChange={handleChange}
+            type="number"
           />
 
           <InputField

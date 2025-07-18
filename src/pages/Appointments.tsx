@@ -13,6 +13,26 @@ const Appointments = () => {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilterInput, setStatusFilterInput] = useState("");
+  const [priorityFilterInput, setPriorityFilterInput] = useState("");
+  const [labortaryFilterInput, setLabortaryFilterInput] = useState("");
+  const [employeeIdFilterInput, setEmployeeIdFilterInput] = useState("");
+  const [dateFilterInput, setDateFilterInput] = useState("");
+  const [filters, setFilters] = useState({
+    status: "",
+    priorityLevel: "",
+    labortary: "",
+    employeeId: "",
+    dateAndTime: "",
+    sortFields: "createdAt",
+    sortOrder: -1,
+  });
+  const [sortFieldInput, setSortFieldInput] = useState("createdAt");
+  const [sortOrderInput, setSortOrderInput] = useState(-1);
+  const [showFilters, setShowFilters] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
 
   const handleView = (patient: any) => {
     setSelectedPatient(patient);
@@ -24,6 +44,40 @@ const Appointments = () => {
     setModalOpen(false);
     setSelectedPatient(null);
     document.body.style.overflow = "auto";
+  };
+
+  const handleApplyFilters = () => {
+    setFilters({
+      status: statusFilterInput,
+      priorityLevel: priorityFilterInput,
+      labortary: labortaryFilterInput,
+      employeeId: employeeIdFilterInput,
+      dateAndTime: dateFilterInput,
+      sortFields: sortFieldInput,
+      sortOrder: sortOrderInput,
+    });
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setStatusFilterInput("");
+    setPriorityFilterInput("");
+    setLabortaryFilterInput("");
+    setEmployeeIdFilterInput("");
+    setDateFilterInput("");
+    setSortFieldInput("createdAt");
+    setSortOrderInput(-1);
+
+    setFilters({
+      status: "",
+      priorityLevel: "",
+      labortary: "",
+      employeeId: "",
+      dateAndTime: "",
+      sortFields: "createdAt",
+      sortOrder: -1,
+    });
+    setPage(1);
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -55,36 +109,77 @@ const Appointments = () => {
     }
   };
 
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("userAuthToken");
+      const queryParams = new URLSearchParams({
+        page: String(page),
+        ...(filters.status && { status: filters.status }),
+        ...(filters.priorityLevel && { priorityLevel: filters.priorityLevel }),
+        ...(filters.labortary && { labortary: filters.labortary }),
+        ...(filters.employeeId && { employeeId: filters.employeeId }),
+        ...(filters.dateAndTime && { dateAndTime: filters.dateAndTime }),
+        ...(filters.sortFields && { sortFields: filters.sortFields }),
+        ...(filters.sortOrder !== undefined && {
+          sortOrder: filters.sortOrder.toString(),
+        }),
+      });
+
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/v1/admin/get-appointments?${queryParams.toString()}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setAppointments(response.data.data.appointments);
+      setTotalPages(response.data.data.totalPages || 1); // in case backend adds totalPages
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Failed to fetch appointments";
+      toast.error(message);
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const token = localStorage.getItem("userAuthToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-employees`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setEmployees(res.data.data || []);
+    } catch (err: any) {
+      toast.error("Failed to load employees");
+    }
+  };
+
   useEffect(() => {
-    const fetchAppointments = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("userAuthToken");
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-appointments`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        setAppointments(response.data.data);
-      } catch (err: any) {
-        const message =
-          err?.response?.data?.message || "Failed to fetch appointments";
-        toast.error(message);
-        setError(message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
+  }, [page]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [filters]);
+
+  useEffect(() => {
+    fetchEmployees();
   }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#0077B6]"></div>
         <span className="ml-4 text-lg font-semibold text-gray-600">
           Loading...
         </span>
@@ -103,6 +198,188 @@ const Appointments = () => {
   return (
     <div className="p-4 bg-white rounded-lg shadow-sm overflow-x-auto">
       <h1 className="text-center text-xl my-3 font-bold">Appointments</h1>
+
+      <div className="flex justify-start mb-4">
+        <button
+          onClick={() => setShowFilters((prev) => !prev)}
+          className="flex items-center gap-2 text-sm font-medium px-4 py-2 bg-[#0077B6] text-white rounded-md hover:bg-[#005f8f] transition-all duration-300 shadow-sm"
+        >
+          {/* Icon */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-5 w-5 transition-transform duration-300 ${
+              showFilters ? "rotate-180" : ""
+            }`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 019 17v-3.586L3.293 6.707A1 1 0 013 6V4z"
+            />
+          </svg>
+
+          {/* Label */}
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </button>
+      </div>
+
+      {showFilters && (
+        <div
+          className="p-4 rounded-lg shadow-sm border border-gray-200 mb-6 animate__animated animate__fadeIn"
+          style={{ animationDuration: "300ms" }}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {/* Date Filter */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Appointment Date
+              </label>
+              <input
+                type="date"
+                value={dateFilterInput}
+                onChange={(e) => setDateFilterInput(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Status
+              </label>
+              <select
+                value={statusFilterInput}
+                onChange={(e) => setStatusFilterInput(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+              >
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Priority Filter */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Priority
+              </label>
+              <select
+                value={priorityFilterInput}
+                onChange={(e) => setPriorityFilterInput(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+              >
+                <option value="">All Priorities</option>
+                <option value="Urgent">Urgent</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            {/* Laboratory Filter */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Laboratory
+              </label>
+              <select
+                value={labortaryFilterInput}
+                onChange={(e) => setLabortaryFilterInput(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+              >
+                <option value="">All Laboratories</option>
+                <option value="Natera">Natera</option>
+                <option value="Caredx">Caredx</option>
+                <option value="Prosecco study">Prosecco study</option>
+                <option value="Assisted Living">Assisted Living</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {/* Employee ID Filter */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Employee ID
+              </label>
+              <select
+                name="employeeId"
+                value={employeeIdFilterInput}
+                onChange={(e) => setEmployeeIdFilterInput(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                required
+              >
+                {employees.length > 0 ? (
+                  <>
+                    <option value="" disabled>
+                      Select an employee
+                    </option>
+                    {employees.map((emp) => (
+                      <option key={emp._id} value={emp.employeeId}>
+                        {`${emp.employeeId} - ${emp.fullName}`}
+                      </option>
+                    ))}
+                  </>
+                ) : (
+                  <option value="" disabled>
+                    No Employee found
+                  </option>
+                )}
+              </select>
+            </div>
+
+            {/* Sort Field */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Sort By
+              </label>
+              <select
+                value={sortFieldInput}
+                onChange={(e) => setSortFieldInput(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+              >
+                <option value="createdAt">Date</option>
+                <option value="patientName">Patient Name</option>
+              </select>
+            </div>
+
+            {/* Sort Order */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Sort Order
+              </label>
+              <select
+                value={sortOrderInput}
+                onChange={(e) => setSortOrderInput(Number(e.target.value))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+              >
+                <option value={-1}>Newest First / Z → A</option>
+                <option value={1}>Oldest First / A → Z</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6 flex-wrap">
+            <button
+              onClick={handleApplyFilters}
+              className="bg-[#0077B6] text-white rounded-md hover:bg-[#005f8f] font-semibold px-6 py-2 text-sm transition duration-200"
+            >
+              Apply Filters
+            </button>
+
+            <button
+              onClick={handleClearFilters}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-2 rounded-md text-sm transition duration-200"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      )}
+
       <table className="w-full min-w-[700px] border-collapse">
         <thead>
           <tr className="border-b border-gray-800">
@@ -174,16 +451,16 @@ const Appointments = () => {
                         handleStatusChange(item._id, e.target.value)
                       }
                     >
-                      <option value="pending">Pending</option>
-                      <option value="completed">Completed</option>
-                      <option value="rejected">Rejected</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Rejected">Rejected</option>
                     </select>
                   )}
                 </td>
                 <td className="py-2 px-1 text-center">
                   <span
                     onClick={() => handleView(item)}
-                    className="inline-block px-3 py-1 bg-[#F0F9FF] rounded-3xl cursor-pointer"
+                    className="inline-block px-3 py-1  rounded-3xl cursor-pointer"
                   >
                     View
                   </span>
@@ -193,6 +470,28 @@ const Appointments = () => {
           </tbody>
         )}
       </table>
+
+      {appointments.length > 0 && (
+        <div className="flex justify-center mt-6 gap-4">
+          <button
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md text-sm transition duration-200"
+          >
+            ←
+          </button>
+          <span className="text-sm font-medium mt-2">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={page === totalPages}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md text-sm transition duration-200"
+          >
+            →
+          </button>
+        </div>
+      )}
 
       {isModalOpen &&
         selectedPatient &&

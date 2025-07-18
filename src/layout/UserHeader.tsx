@@ -81,7 +81,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           <div className="sm:flex">
-            <span className="text-sm font-medium text-white bg-[#0077B6] rounded-full px-3 py-1 shadow hover:bg-[#005f8f] transition-all duration-150">
+            <span className="text-sm font-medium text-white bg-[#0077B6] rounded-full px-3 py-1 shadow hover:bg-[#0077B6] transition-all duration-150">
               Employee
             </span>
           </div>

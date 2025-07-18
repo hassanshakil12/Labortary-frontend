@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
-import AdminDropdown from "../components/header/AdminDropdown";
+import LaboratoryDropdown from "../components/header/LaboratoryDropdown";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -82,7 +82,7 @@ const AppHeader: React.FC = () => {
 
           <div className="sm:flex">
             <span className="text-sm font-medium text-white bg-[#0077B6] rounded-full px-3 py-1 shadow hover:bg-[#0077B6] transition-all duration-150">
-              Admin
+              Laboratory
             </span>
           </div>
 
@@ -159,7 +159,7 @@ const AppHeader: React.FC = () => {
             {/* <!-- Notification Menu Area --> */}
           </div>
           {/* <!-- User Area --> */}
-          <AdminDropdown />
+          <LaboratoryDropdown />
         </div>
       </div>
     </header>
