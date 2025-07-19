@@ -62,7 +62,7 @@ export default function UserDropdown() {
   return (
     <div ref={dropdownRef} className="relative flex items-center gap-4">
       {/* Notification Icon */}
-      <Link to="/notification-admin">
+      <Link to="/notifications">
         <span className="overflow-hidden h-11 w-11 cursor-pointer flex items-center justify-center">
           <img
             src="/images/notification-icon.png"

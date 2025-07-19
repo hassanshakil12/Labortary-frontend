@@ -15,19 +15,26 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: (
-      <img
-        src="./images/dashboard-icon.png"
-        alt="Dashboard"
-        className="w-5 h-5"
-      />
+      <img src="./images/dashboard.png" alt="Dashboard" className="w-5 h-5" />
     ),
     name: "Dashboard",
-    path: "/admin-dashboard",
+    path: "/dashboard",
   },
   {
     icon: (
       <img
-        src="./images/appointment-icon.png"
+        src="./images/add-appointment.png"
+        alt="Add Appointments"
+        className="w-5 h-5"
+      />
+    ),
+    name: "Add Appointments",
+    path: "/add-appointment",
+  },
+  {
+    icon: (
+      <img
+        src="./images/appointment.png"
         alt="Appointments"
         className="w-5 h-5"
       />
@@ -38,19 +45,26 @@ const navItems: NavItem[] = [
   {
     icon: (
       <img
-        src="./images/cr-app-icon.png"
-        alt="Create Appointments"
+        src="./images/add-employee.png"
+        alt="Add Employee"
         className="w-5 h-5"
       />
     ),
-    name: "Create Appointments",
-    path: "/create-appointments",
+    name: "Add Employee",
+    path: "/add-employee",
+  },
+  {
+    icon: (
+      <img src="./images/employee.png" alt="Employees" className="w-5 h-5" />
+    ),
+    name: "Employees",
+    path: "/employees",
   },
   {
     icon: (
       <img
-        src="./images/cr-app-icon.png"
-        alt="Create Appointments"
+        src="./images/add-laboratory.png"
+        alt="Add Appointments"
         className="w-5 h-5"
       />
     ),
@@ -59,58 +73,30 @@ const navItems: NavItem[] = [
   },
   {
     icon: (
-      <img src="./images/add-employee.png" alt="Archive" className="w-5 h-5" />
-    ),
-    name: "Add Employee",
-    path: "/add-employee",
-  },
-  {
-    icon: (
-      <img src="./images/employees.png" alt="Archive" className="w-5 h-5" />
-    ),
-    name: "Employees",
-    path: "/employees",
-  },
-  {
-    icon: (
-      <img src="./images/employees.png" alt="Archive" className="w-5 h-5" />
+      <img
+        src="./images/laboratory.png"
+        alt="Laboratories"
+        className="w-5 h-5"
+      />
     ),
     name: "Laboratories",
     path: "/laboratories",
   },
   {
-    icon: (
-      <img
-        src="./images/payment-icon.png"
-        alt="Salesperson"
-        className="w-5 h-5"
-      />
-    ),
+    icon: <img src="./images/payment.png" alt="Payment" className="w-5 h-5" />,
     name: "Payment",
     path: "/add-payment",
   },
   {
-    icon: (
-      <img
-        src="./images/commision-icon.png"
-        alt="archeive"
-        className="w-5 h-5"
-      />
-    ),
+    icon: <img src="./images/archive.png" alt="Archive" className="w-5 h-5" />,
     name: "Archive",
-    path: "/archeive",
+    path: "/archive",
   },
 ];
 
 const bottomNavItems: NavItem[] = [
   {
-    icon: (
-      <img
-        src="./images/settings-icon.png"
-        alt="Settings"
-        className="w-5 h-5"
-      />
-    ),
+    icon: <img src="./images/setting.png" alt="Settings" className="w-5 h-5" />,
     name: "Settings",
     path: "/settings",
   },
@@ -248,7 +234,7 @@ const AppSidebar: React.FC = () => {
                   className={`ml-auto w-5 h-5 transition-transform duration-200 ${
                     openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
+                      ? "rotate-180 text-[#0077B6]"
                       : ""
                   }`}
                 />

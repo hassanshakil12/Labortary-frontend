@@ -87,7 +87,7 @@ const Laboratories = () => {
         }
       );
 
-      setLaboratories(data?.data.laboratories || []);
+      setLaboratories(data?.data || []);
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || "Failed to fetch laboratories"

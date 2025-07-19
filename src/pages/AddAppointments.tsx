@@ -31,7 +31,7 @@ const InputField: React.FC<InputFieldProps> = ({
       onChange={onChange}
       type={type}
       placeholder={placeholder}
-      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
     />
   </div>
 );
@@ -201,7 +201,7 @@ const PatientUploadForm: React.FC = () => {
           <img
             src={imagePreviewUrl}
             alt="Patient Preview"
-            className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-2 border-blue-500 shadow-sm"
+            className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-2 border-[#0077B6] shadow-sm"
           />
         ) : (
           <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-gray-400 text-xs text-center">
@@ -210,7 +210,7 @@ const PatientUploadForm: React.FC = () => {
         )}
 
         {/* Upload Button */}
-        <label className="cursor-pointer inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-lg border border-blue-300 hover:bg-blue-200 transition">
+        <label className="cursor-pointer inline-block px-4 py-2 bg-[#0077B620] text-[#0077B6] rounded-lg border border-[#0077B640] hover:bg-[#0077B640] transition">
           Upload Image
           <input
             type="file"
@@ -278,7 +278,7 @@ const PatientUploadForm: React.FC = () => {
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
               required
             >
               <option value="" disabled>
@@ -298,7 +298,7 @@ const PatientUploadForm: React.FC = () => {
               name="employeeId"
               value={formData.employeeId}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
               required
             >
               <option value="" disabled>
@@ -346,7 +346,7 @@ const PatientUploadForm: React.FC = () => {
                   }));
                 }
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
               required
             >
               <option value="" disabled>
@@ -374,7 +374,7 @@ const PatientUploadForm: React.FC = () => {
               name="priorityLevel"
               value={formData.priorityLevel}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
               required
             >
               <option value="" disabled>
@@ -395,7 +395,7 @@ const PatientUploadForm: React.FC = () => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
               required
             >
               <option value="" disabled>
@@ -433,7 +433,7 @@ const PatientUploadForm: React.FC = () => {
               onChange={handleChange}
               rows={4}
               placeholder="Any instruction advised by the doctor before conducting test"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
             />
           </div>
 
@@ -445,7 +445,7 @@ const PatientUploadForm: React.FC = () => {
             </label>
 
             {/* File Upload Input */}
-            <label className="relative flex items-center justify-center px-4 py-2 w-full md:w-fit bg-blue-50 text-blue-700 border border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 transition text-sm font-medium">
+            <label className="relative flex items-center justify-center px-4 py-2 w-full md:w-fit bg-[#0077B610] text-[#0077B6] border border-[#0077B640] rounded-lg cursor-pointer hover:bg-[#0077B620] transition text-sm font-medium">
               <span>Select Documents</span>
               <input
                 type="file"
@@ -473,7 +473,7 @@ const PatientUploadForm: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-6 py-2 bg-[#0077B6] text-white rounded-full hover:bg-[#0077B6] transition disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

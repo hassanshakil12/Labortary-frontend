@@ -43,7 +43,7 @@ const LoginPage = () => {
         localStorage.setItem("userAuthToken", result.data.userAuthToken);
         navigate(
           result.data.role === "admin"
-            ? "/admin-dashboard"
+            ? "/dashboard"
             : result.data.role === "employee"
             ? "/employees-dashboard"
             : result.data.role === "laboratory"

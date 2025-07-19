@@ -93,7 +93,7 @@ const NotificationsPage = () => {
             e.currentTarget.src = "./images/notification-icon.png";
           }}
         />
-        <h2 className="text-lg font-semibold text-blue-600 mb-2">
+        <h2 className="text-lg font-semibold text-[#0077B6] mb-2">
           Notifications
         </h2>
         <p className="text-sm text-gray-500">

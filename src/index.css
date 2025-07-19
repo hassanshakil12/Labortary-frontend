@@ -196,7 +196,7 @@ layer(base);
 
 @layer utilities {
   .menu-item-active {
-    @apply bg-transparent text-blue-500;
+    @apply bg-transparent text-[#0077B6];
   }
 }
 

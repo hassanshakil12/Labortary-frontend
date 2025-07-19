@@ -127,23 +127,23 @@ export default function Dashboard() {
 
   const Spinner = () => (
     <div className="flex items-center gap-2">
-      <div className="animate-spin h-5 w-5 border-b-2 border-blue-600 rounded-full"></div>
+      <div className="animate-spin h-5 w-5 border-b-2 border-[#0077B6] rounded-full"></div>
       <span className="text-sm text-gray-600">Loading...</span>
     </div>
   );
 
   return (
-    <div className="bg-blue-50 min-h-screen space-y-6">
+    <div className="max-h-screen space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Total Earnings */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md rounded-xl p-6 flex flex-col gap-4">
+        <div className="bg-gradient-to-br from-[#0077B6] to-[#005f8f] text-white shadow-md rounded-xl p-6 flex flex-col gap-4">
           {loading ? (
             <Spinner />
           ) : (
             <>
               <div className="flex items-center space-x-4">
-                <div className="bg-white text-blue-600 p-3 rounded-full">
+                <div className="bg-white text-[#0077B6] p-3 rounded-full">
                   <span className="text-2xl font-bold">$</span>
                 </div>
                 <div>
@@ -156,13 +156,13 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button className="bg-white text-blue-700 hover:bg-gray-100 text-sm font-semibold px-4 py-1.5 rounded-full">
+                <button className="bg-white text-[#0077B6] hover:bg-gray-100 text-sm font-semibold px-4 py-1.5 rounded-full">
                   + Topup
                 </button>
-                <button className="bg-white text-blue-700 hover:bg-gray-100 text-sm font-semibold px-4 py-1.5 rounded-full">
+                <button className="bg-white text-[#0077B6] hover:bg-gray-100 text-sm font-semibold px-4 py-1.5 rounded-full">
                   + Transfer
                 </button>
-                <button className="bg-white text-blue-700 hover:bg-gray-100 text-sm font-semibold px-4 py-1.5 rounded-full">
+                <button className="bg-white text-[#0077B6] hover:bg-gray-100 text-sm font-semibold px-4 py-1.5 rounded-full">
                   + Statements
                 </button>
               </div>
@@ -177,9 +177,9 @@ export default function Dashboard() {
             <Spinner />
           ) : recentTransaction ? (
             <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-3 rounded-full">
+              <div className="bg-[#0077B6] p-3 rounded-full">
                 <svg
-                  className="w-8 h-8 text-blue-600"
+                  className="w-8 h-8 text-[#0077B6]"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -224,7 +224,7 @@ export default function Dashboard() {
           <h3 className="text-xl font-bold mb-4">Transaction History</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm text-left">
-              <thead className="bg-blue-100 text-gray-700">
+              <thead className="bg-[#0077B620] text-gray-700">
                 <tr>
                   <th className="px-4 py-2 font-semibold">Account</th>
                   <th className="px-4 py-2 font-semibold">Name</th>
@@ -237,7 +237,7 @@ export default function Dashboard() {
                 {transactions.map((tx) => (
                   <tr
                     key={tx._id}
-                    className="border-b last:border-b-0 hover:bg-blue-50"
+                    className="border-b last:border-b-0 hover:bg-[#0077B610]"
                   >
                     <td className="px-4 py-2 whitespace-nowrap">
                       <p className="font-semibold">
@@ -257,7 +257,7 @@ export default function Dashboard() {
                     </td>
                     <td className="px-4 py-2">
                       {updatingId === tx._id ? (
-                        <div className="animate-spin h-5 w-5 border-b-2 border-blue-600 rounded-full"></div>
+                        <div className="animate-spin h-5 w-5 border-b-2 border-[#0077B6] rounded-full"></div>
                       ) : (
                         <select
                           className="border rounded-md text-xs px-2 py-1 bg-white"

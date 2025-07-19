@@ -49,21 +49,18 @@ export default function App() {
         {/* Protected Admin Routes */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route element={<AdminLayout />}>
-            <Route index path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route index path="/dashboard" element={<AdminDashboard />} />
+            <Route path="/add-appointment" element={<AddAppointments />} />
             <Route path="/appointments" element={<Appointments />} />
-            <Route path="/create-appointments" element={<AddAppointments />} />
             <Route path="/add-employee" element={<AddEmploye />} />
-            <Route path="/add-laboratory" element={<AddLaboratory />} />
             <Route path="/employees" element={<Employees />} />
+            <Route path="/add-laboratory" element={<AddLaboratory />} />
             <Route path="/laboratories" element={<Laboratories />} />
             <Route path="/add-payment" element={<AddPayment />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/archeive" element={<Archeive />} />
+            <Route path="/archive" element={<Archeive />} />
             <Route path="/settings" element={<Settings />} />
-            <Route
-              path="/notification-admin"
-              element={<AdminNotifications />}
-            />
+            <Route path="/notifications" element={<AdminNotifications />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
 

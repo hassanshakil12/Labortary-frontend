@@ -33,7 +33,7 @@ const InputField: React.FC<InputFieldProps> = ({
       placeholder={placeholder}
       className={`w-full px-4 py-2 border ${
         error ? "border-red-500" : "border-gray-300"
-      } rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+      } rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none`}
     />
     {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
   </div>
@@ -199,7 +199,7 @@ const AddEmployee: React.FC = () => {
           <img
             src={imagePreviewUrl}
             alt="Patient Preview"
-            className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-2 border-blue-500 shadow-sm"
+            className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-2 border-[#0077B6] shadow-sm"
           />
         ) : (
           <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-gray-400 text-xs text-center">
@@ -208,7 +208,7 @@ const AddEmployee: React.FC = () => {
         )}
 
         {/* Upload Button */}
-        <label className="cursor-pointer inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-lg border border-blue-300 hover:bg-blue-200 transition">
+        <label className="cursor-pointer inline-block px-4 py-2 bg-[#0077B620] text-[#0077B6] rounded-lg border border-[#0077B640] hover:bg-[#0077B630] transition">
           Upload Image
           <input
             type="file"
@@ -269,7 +269,7 @@ const AddEmployee: React.FC = () => {
               onChange={handleChange}
               className={`w-full px-4 py-2 border ${
                 errors.department ? "border-red-500" : "border-gray-300"
-              } rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+              } rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none`}
             >
               <option value="" disabled>
                 Select Department
@@ -327,7 +327,7 @@ const AddEmployee: React.FC = () => {
               onChange={handleChange}
               className={`w-full px-4 py-2 border ${
                 errors.shiftTiming ? "border-red-500" : "border-gray-300"
-              } rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+              } rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none`}
             >
               <option value="" disabled>
                 Select Shift
@@ -353,7 +353,7 @@ const AddEmployee: React.FC = () => {
               onChange={handleChange}
               className={`w-full px-4 py-2 border ${
                 errors.gender ? "border-red-500" : "border-gray-300"
-              } rounded-lg focus:ring-2 focus:ring-blue-500 outline-none`}
+              } rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none`}
             >
               <option value="" disabled>
                 Select Gender
@@ -380,7 +380,7 @@ const AddEmployee: React.FC = () => {
           onChange={handleChange}
           rows={4}
           placeholder="Write something about the employee..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0077B6] outline-none"
         />
       </div>
 
@@ -389,7 +389,7 @@ const AddEmployee: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
+          className="px-6 py-2 bg-[#0077B6] text-white rounded-full hover:bg-[#0077B6] transition"
         >
           {loading ? "Adding..." : "Add Employee"}
         </button>

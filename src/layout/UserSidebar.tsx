@@ -15,11 +15,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: (
-      <img
-        src="./images/dashboard-icon.png"
-        alt="Leaderboard"
-        className="w-5 h-5"
-      />
+      <img src="./images/dashboard.png" alt="Dashboard" className="w-5 h-5" />
     ),
     name: "Dashboard",
     path: "/employees-dashboard",
@@ -27,8 +23,8 @@ const navItems: NavItem[] = [
   {
     icon: (
       <img
-        src="./images/appointment-icon.png"
-        alt="appointments"
+        src="./images/appointment.png"
+        alt="Appointments"
         className="w-5 h-5"
       />
     ),
@@ -36,14 +32,8 @@ const navItems: NavItem[] = [
     path: "/appointments-emp",
   },
   {
-    icon: (
-      <img
-        src="./images/commision-icon.png"
-        alt="archeive"
-        className="w-5 h-5"
-      />
-    ),
-    name: "Archeive",
+    icon: <img src="./images/archive.png" alt="archeive" className="w-5 h-5" />,
+    name: "Archive",
     path: "/archeive-emp",
   },
 ];
@@ -81,13 +71,7 @@ const othersItems: NavItem[] = [
 
 const bottomNavItems: NavItem[] = [
   {
-    icon: (
-      <img
-        src="./images/settings-icon.png"
-        alt="Settings"
-        className="w-5 h-5"
-      />
-    ),
+    icon: <img src="./images/setting.png" alt="Settings" className="w-5 h-5" />,
     name: "Settings",
     path: "/settings-emp",
   },
