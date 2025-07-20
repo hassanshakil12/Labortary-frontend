@@ -26,6 +26,7 @@ const BookedRankingTable = () => {
           }
         );
 
+        console.log("Today's Appointments Data:", data);
         setAppointments(data?.data || []);
       } catch (error: any) {
         toast.error(
@@ -43,7 +44,7 @@ const BookedRankingTable = () => {
   if (loading) {
     return (
       <div className="min-h-[200px] flex items-center justify-center bg-white rounded-lg shadow-sm">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0077B6]"></div>
         <span className="ml-3 text-sm text-gray-600 font-medium">
           Loading...
         </span>
@@ -64,7 +65,7 @@ const BookedRankingTable = () => {
               "Patient",
               "Age",
               "Date & Time",
-              "Labortary",
+              "Employee Id",
               "Priority",
               "Instruction",
               "Status",
@@ -121,7 +122,8 @@ const BookedRankingTable = () => {
                   )}
                 </td>
                 <td className="py-2 text-xs md:text-sm text-center">
-                  {item?.labortary || "N/A"}
+                  {item?.employee?.employeeId || "N/A"} -{" "}
+                  {item?.employee?.fullName || "Not Assigned"}
                 </td>
                 <td className="py-2 text-xs md:text-sm text-center capitalize">
                   {item?.priorityLevel || "N/A"}
@@ -132,9 +134,9 @@ const BookedRankingTable = () => {
                 <td className="py-2 text-xs md:text-sm text-center">
                   <span
                     className={`inline-block px-3 py-1 rounded-3xl text-xs font-semibold ${
-                      item?.status === "completed"
+                      item?.status === "Completed"
                         ? "bg-green-100 text-green-700"
-                        : item?.status === "rejected"
+                        : item?.status === "Rejected"
                         ? "bg-red-100 text-red-700"
                         : "bg-yellow-100 text-yellow-700"
                     }`}

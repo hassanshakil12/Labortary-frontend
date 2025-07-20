@@ -14,12 +14,12 @@ const Archeive = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilterInput, setStatusFilterInput] = useState("");
   const [priorityFilterInput, setPriorityFilterInput] = useState("");
-  const [labortaryFilterInput, setLabortaryFilterInput] = useState("");
+  const [employeeFilterInput, setEmployeeFilterInput] = useState("");
   const [dateFilterInput, setDateFilterInput] = useState("");
   const [filters, setFilters] = useState({
     status: "",
     priorityLevel: "",
-    labortary: "",
+    employeeId: "",
     dateAndTime: "",
     sortFields: "createdAt",
     sortOrder: -1,
@@ -27,12 +27,13 @@ const Archeive = () => {
   const [sortFieldInput, setSortFieldInput] = useState("createdAt");
   const [sortOrderInput, setSortOrderInput] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
 
   const handleApplyFilters = () => {
     setFilters({
       status: statusFilterInput,
       priorityLevel: priorityFilterInput,
-      labortary: labortaryFilterInput,
+      employeeId: employeeFilterInput,
       dateAndTime: dateFilterInput,
       sortFields: sortFieldInput,
       sortOrder: sortOrderInput,
@@ -43,7 +44,7 @@ const Archeive = () => {
   const handleClearFilters = () => {
     setStatusFilterInput("");
     setPriorityFilterInput("");
-    setLabortaryFilterInput("");
+    setEmployeeFilterInput("");
     setDateFilterInput("");
     setSortFieldInput("createdAt");
     setSortOrderInput(-1);
@@ -51,7 +52,7 @@ const Archeive = () => {
     setFilters({
       status: "",
       priorityLevel: "",
-      labortary: "",
+      employeeId: "",
       dateAndTime: "",
       sortFields: "createdAt",
       sortOrder: -1,
@@ -81,7 +82,7 @@ const Archeive = () => {
         ...(filters.priorityLevel && {
           priorityLevel: filters.priorityLevel,
         }),
-        ...(filters.labortary && { labortary: filters.labortary }),
+        ...(filters.employeeId && { employeeId: filters.employeeId }),
         ...(filters.dateAndTime && { dateAndTime: filters.dateAndTime }),
         ...(filters.sortFields && { sortFields: filters.sortFields }),
         ...(filters.sortOrder !== undefined && {
@@ -110,13 +111,30 @@ const Archeive = () => {
     }
   };
 
-  useEffect(() => {
-    fetchAppointments();
-  }, [page]);
+  const fetchEmployees = async () => {
+    try {
+      const token = localStorage.getItem("userAuthToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-employees`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setEmployees(res.data.data || []);
+    } catch (err: any) {
+      toast.error("Failed to load employees");
+    }
+  };
 
   useEffect(() => {
     fetchAppointments();
-  }, [filters]);
+  }, [page, filters]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
   if (loading) {
     return (
@@ -225,19 +243,29 @@ const Archeive = () => {
             {/* Laboratory Filter */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Laboratory
+                Employee
               </label>
               <select
-                value={labortaryFilterInput}
-                onChange={(e) => setLabortaryFilterInput(e.target.value)}
+                value={employeeFilterInput}
+                onChange={(e) => setEmployeeFilterInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
-                <option value="">All Laboratories</option>
-                <option value="Natera">Natera</option>
-                <option value="Caredx">Caredx</option>
-                <option value="Prosecco study">Prosecco study</option>
-                <option value="Assisted Living">Assisted Living</option>
-                <option value="Other">Other</option>
+                {employees.length > 0 ? (
+                  <>
+                    <option value="" disabled>
+                      Select an employee
+                    </option>
+                    {employees.map((emp) => (
+                      <option key={emp._id} value={emp._id}>
+                        {`${emp.employeeId} - ${emp.fullName}`}
+                      </option>
+                    ))}
+                  </>
+                ) : (
+                  <option value="" disabled>
+                    No Employee found
+                  </option>
+                )}
               </select>
             </div>
 
@@ -298,7 +326,7 @@ const Archeive = () => {
               "Patient",
               "Age",
               "Date & Time",
-              "Labortary",
+              "employee Id",
               "Priority",
               "Instruction",
               "Status",
@@ -348,8 +376,11 @@ const Archeive = () => {
                   {new Date(item.appointmentDateTime).toLocaleString()}
                 </td>
                 <td className="py-2 px-1 text-xs md:text-sm text-center">
-                  {item.labortary || "N/A"}
+                  {typeof item.employeeId === "object"
+                    ? `${item.employeeId.employeeId} - ${item.employeeId.fullName}`
+                    : item.employeeId || "N/A"}
                 </td>
+
                 <td className="py-2 px-1 text-xs md:text-sm text-center">
                   {item.priorityLevel || "Normal"}
                 </td>
@@ -456,7 +487,7 @@ const Archeive = () => {
                     ).toLocaleTimeString()}
                   </p>
                   <p className="text-sm">
-                    Labortary: {selectedPatient.labortary}
+                    Laboratory: {selectedPatient.labortary}
                   </p>
                   <p className="text-sm">
                     Priority: {selectedPatient.priorityLevel}
@@ -472,9 +503,14 @@ const Archeive = () => {
                     Employee ID:{" "}
                     {selectedPatient.employeeId?.employeeId || "N/A"}
                   </p>
+                </div>
+
+                <div className="w-full mb-4">
                   {selectedPatient.documents?.length > 0 && (
                     <div className="text-sm">
-                      <p className="font-semibold mb-1">Documents:</p>
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                        Important Documents
+                      </h2>
                       <ul className="list-disc ml-5 space-y-1">
                         {selectedPatient.documents.map(
                           (doc: string, index: number) => (
@@ -486,7 +522,7 @@ const Archeive = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 download
-                                className="text-blue-600 hover:underline break-all"
+                                className="text-[#0077B6] hover:underline break-all"
                               >
                                 {doc.split("/").pop()}
                               </a>
@@ -496,11 +532,14 @@ const Archeive = () => {
                       </ul>
                     </div>
                   )}
-                  {selectedPatient.trackingId ? (
-                    <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
-                        Tracking ID Image:
-                      </p>
+                </div>
+
+                <div className="w-full mb-4">
+                  <div className="mt-4">
+                    <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                      Tracking ID Image
+                    </h2>
+                    {selectedPatient.trackingId ? (
                       <img
                         src={`${import.meta.env.VITE_API_BASE_URL}/${
                           selectedPatient.trackingId
@@ -508,15 +547,10 @@ const Archeive = () => {
                         alt="Tracking ID"
                         className="w-full max-h-96 object-contain border rounded shadow"
                       />
-                    </div>
-                  ) : (
-                    <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
-                        Tracking ID Image:
-                      </p>
+                    ) : (
                       <p className="text-sm">No tracking ID image available.</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 <div className="w-full mb-4">

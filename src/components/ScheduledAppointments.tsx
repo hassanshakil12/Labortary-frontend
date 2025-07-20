@@ -16,7 +16,9 @@ const BookedRankingTable = () => {
 
       try {
         const { data } = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/get-today-appointments`,
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/v1/employee/get-today-appointments`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -41,7 +43,7 @@ const BookedRankingTable = () => {
   if (loading) {
     return (
       <div className="min-h-[200px] flex items-center justify-center bg-white rounded-lg shadow-sm">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0077B6]"></div>
         <span className="ml-3 text-sm text-gray-600 font-medium">
           Loading...
         </span>
@@ -130,9 +132,9 @@ const BookedRankingTable = () => {
                 <td className="py-2 text-xs md:text-sm text-center">
                   <span
                     className={`inline-block px-3 py-1 rounded-3xl text-xs font-semibold ${
-                      item?.status === "completed"
+                      item?.status === "Completed"
                         ? "bg-green-100 text-green-700"
-                        : item?.status === "rejected"
+                        : item?.status === "Rejected"
                         ? "bg-red-100 text-red-700"
                         : "bg-yellow-100 text-yellow-700"
                     }`}

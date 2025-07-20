@@ -10,8 +10,7 @@ const RoleRedirect = () => {
   if (role === "admin") return <Navigate to="/dashboard" replace />;
   if (role === "laboratory")
     return <Navigate to="/laboratory-dashboard" replace />;
-  if (role === "employee")
-    return <Navigate to="/employees-dashboard" replace />;
+  if (role === "employee") return <Navigate to="/employee-dashboard" replace />;
 
   return <Navigate to="/signin" replace />; // fallback
 };

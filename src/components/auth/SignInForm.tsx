@@ -45,7 +45,7 @@ const LoginPage = () => {
           result.data.role === "admin"
             ? "/dashboard"
             : result.data.role === "employee"
-            ? "/employees-dashboard"
+            ? "/employee-dashboard"
             : result.data.role === "laboratory"
             ? "/laboratory-dashboard"
             : toast.error("Invalid role")

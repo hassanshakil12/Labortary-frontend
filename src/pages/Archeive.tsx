@@ -30,6 +30,7 @@ const Archeive = () => {
   const [sortOrderInput, setSortOrderInput] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
+  const [laboratories, setLaboratories] = useState<any[]>([]);
 
   const handleApplyFilters = () => {
     setFilters({
@@ -134,6 +135,27 @@ const Archeive = () => {
     }
   };
 
+  const fetchLaboratories = async () => {
+    try {
+      const token = localStorage.getItem("userAuthToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-laboratories`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setLaboratories(res.data.data || []);
+    } catch (err: any) {
+      toast.error("Failed to load laboratories");
+    }
+  };
+
+  useEffect(() => {
+    fetchLaboratories();
+  }, []);
+
   useEffect(() => {
     fetchAppointments();
   }, [page]);
@@ -226,7 +248,9 @@ const Archeive = () => {
                 onChange={(e) => setStatusFilterInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
-                <option value="">All Statuses</option>
+                <option value="" disabled>
+                  Select an Status
+                </option>
                 <option value="Completed">Completed</option>
                 <option value="Rejected">Rejected</option>
               </select>
@@ -242,7 +266,9 @@ const Archeive = () => {
                 onChange={(e) => setPriorityFilterInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
-                <option value="">All Priorities</option>
+                <option value="" disabled>
+                  Select a priority
+                </option>
                 <option value="Urgent">Urgent</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
@@ -256,11 +282,35 @@ const Archeive = () => {
                 Laboratory
               </label>
               <select
+                name="labortary"
                 value={labortaryFilterInput}
-                onChange={(e) => setLabortaryFilterInput(e.target.value)}
+                onChange={(e) => {
+                  const selectedValue = e.target.value;
+
+                  const selectedLab = laboratories.find(
+                    (lab) => lab._id === selectedValue
+                  );
+
+                  if (selectedLab) {
+                    // From DB
+                    setLabortaryFilterInput(selectedLab.fullName);
+                  } else {
+                    // From static options
+                    setLabortaryFilterInput(selectedValue);
+                  }
+                }}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                required
               >
-                <option value="">All Laboratories</option>
+                <option value="" disabled>
+                  Select a laboratory
+                </option>
+                {laboratories.map((lab) => (
+                  <option key={lab._id} value={lab.fullName}>
+                    {lab.fullName}
+                  </option>
+                ))}
+                {/* Static labs */}
                 <option value="Natera">Natera</option>
                 <option value="Caredx">Caredx</option>
                 <option value="Prosecco study">Prosecco study</option>
@@ -526,9 +576,14 @@ const Archeive = () => {
                     Employee ID:{" "}
                     {selectedPatient.employeeId?.employeeId || "N/A"}
                   </p>
+                </div>
+
+                <div className="w-full mb-4">
                   {selectedPatient.documents?.length > 0 && (
                     <div className="text-sm">
-                      <p className="font-semibold mb-1">Documents:</p>
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                        Important Documents
+                      </h2>
                       <ul className="list-disc ml-5 space-y-1">
                         {selectedPatient.documents.map(
                           (doc: string, index: number) => (
@@ -540,7 +595,7 @@ const Archeive = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 download
-                                className="text-blue-600 hover:underline break-all"
+                                className="text-[#0077B6] hover:underline break-all"
                               >
                                 {doc.split("/").pop()}
                               </a>
@@ -550,11 +605,14 @@ const Archeive = () => {
                       </ul>
                     </div>
                   )}
+                </div>
+
+                <div className="w-full mb-4">
                   {selectedPatient.trackingId ? (
                     <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
-                        Tracking ID Image:
-                      </p>
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                        Tracking ID Image
+                      </h2>
                       <img
                         src={`${import.meta.env.VITE_API_BASE_URL}/${
                           selectedPatient.trackingId
@@ -565,9 +623,9 @@ const Archeive = () => {
                     </div>
                   ) : (
                     <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
                         Tracking ID Image:
-                      </p>
+                      </h2>
                       <p className="text-sm">No tracking ID image available.</p>
                     </div>
                   )}

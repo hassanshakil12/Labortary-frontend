@@ -18,7 +18,7 @@ const navItems: NavItem[] = [
       <img src="./images/dashboard.png" alt="Dashboard" className="w-5 h-5" />
     ),
     name: "Dashboard",
-    path: "/employees-dashboard",
+    path: "/employee-dashboard",
   },
   {
     icon: (
@@ -29,12 +29,12 @@ const navItems: NavItem[] = [
       />
     ),
     name: "Appointments",
-    path: "/appointments-emp",
+    path: "/employee-appointments",
   },
   {
     icon: <img src="./images/archive.png" alt="archeive" className="w-5 h-5" />,
     name: "Archive",
-    path: "/archeive-emp",
+    path: "/employee-archive",
   },
 ];
 
@@ -73,7 +73,7 @@ const bottomNavItems: NavItem[] = [
   {
     icon: <img src="./images/setting.png" alt="Settings" className="w-5 h-5" />,
     name: "Settings",
-    path: "/settings-emp",
+    path: "/employee-settings",
   },
 ];
 const AppSidebar: React.FC = () => {

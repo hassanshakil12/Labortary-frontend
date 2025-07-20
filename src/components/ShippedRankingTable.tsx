@@ -106,7 +106,7 @@ const Employees = () => {
   if (loading) {
     return (
       <div className="min-h-[300px] flex items-center justify-center bg-white rounded-lg shadow-sm">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0077B6]"></div>
         <span className="ml-3 text-sm text-gray-600 font-medium">
           Loading...
         </span>
@@ -149,7 +149,7 @@ const Employees = () => {
                   <div className="mt-3 flex justify-center gap-3">
                     <button
                       onClick={() => handleView(employee)}
-                      className="text-xs px-4 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                      className="text-xs px-4 py-1 bg-[#0077B620] text-[#0077B6] rounded-md hover:bg-[#0077B630]"
                     >
                       View
                     </button>

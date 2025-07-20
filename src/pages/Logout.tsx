@@ -28,6 +28,7 @@ const Logout = () => {
       );
 
       if (response.status !== 200) {
+        toast.error("Unexpected response from server");
         throw new Error("Unexpected response from server");
       }
 

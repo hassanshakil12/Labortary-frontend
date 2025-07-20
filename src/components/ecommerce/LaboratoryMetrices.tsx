@@ -87,8 +87,6 @@ const EcommerceMetrics = () => {
     fetchMetrics();
   }, []);
 
-  console.log(data);
-
   const chartData =
     data?.weeklyAppointments?.currentLaboratory?.map((week, idx) => {
       const base: any = {

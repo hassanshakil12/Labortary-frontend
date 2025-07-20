@@ -36,6 +36,7 @@ import AppointmentLab from "./pages/AppointmentLab";
 import ArcheiveLab from "./pages/ArcheiveLab";
 import ProfileLab from "./pages/ProfileLab";
 import SettingsLab from "./pages/SettingsLab";
+import AddAppointmentLab from "./pages/AddAppointmentLab";
 import { Toaster } from "react-hot-toast";
 
 export default function App() {
@@ -56,7 +57,7 @@ export default function App() {
             <Route path="/employees" element={<Employees />} />
             <Route path="/add-laboratory" element={<AddLaboratory />} />
             <Route path="/laboratories" element={<Laboratories />} />
-            <Route path="/add-payment" element={<AddPayment />} />
+            <Route path="/payments" element={<AddPayment />} />
             <Route path="/archive" element={<Archeive />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/notifications" element={<AdminNotifications />} />
@@ -69,16 +70,21 @@ export default function App() {
           <Route element={<UserLayout />}>
             <Route
               index
-              path="/employees-dashboard"
+              path="/employee-dashboard"
               element={<UserDashboard />}
             />
-            <Route path="/appointments-emp" element={<AppointmentsEmp />} />
-            <Route path="/mail-to-admin" element={<MailToAdmin />} />
-            <Route path="/profile-emp" element={<ProfileEmp />} />
-            <Route path="/settings-emp" element={<SettingsEmp />} />
-            <Route path="/archeive-emp" element={<ArcheiveUser />} />
-            <Route path="/logout-salesperson" element={<Logout />} />
-            <Route path="/notification-user" element={<UserNotification />} />
+            <Route
+              path="/employee-appointments"
+              element={<AppointmentsEmp />}
+            />
+            <Route path="/employee-profile" element={<ProfileEmp />} />
+            <Route path="/employee-settings" element={<SettingsEmp />} />
+            <Route path="/employee-archive" element={<ArcheiveUser />} />
+            <Route path="/employee-logout" element={<Logout />} />
+            <Route
+              path="/employee-notifications"
+              element={<UserNotification />}
+            />
           </Route>
         </Route>
 
@@ -91,14 +97,18 @@ export default function App() {
               element={<LaboratoryDashboard />}
             />
             <Route
+              path="/laboratory-add-appointment"
+              element={<AddAppointmentLab />}
+            />
+            <Route
               path="/laboratory-appointments"
               element={<AppointmentLab />}
             />
-            <Route path="/laboratory-archeive" element={<ArcheiveLab />} />
+            <Route path="/laboratory-archive" element={<ArcheiveLab />} />
             <Route path="/laboratory-settings" element={<SettingsLab />} />
             <Route path="/laboratory-profile" element={<ProfileLab />} />
             <Route
-              path="/laboratory-notification"
+              path="/laboratory-notifications"
               element={<LaboratoryNotification />}
             />
             <Route path="/laboratory-logout" element={<Logout />} />
@@ -108,7 +118,6 @@ export default function App() {
         {/* Public Auth Routes */}
         <Route path="/" element={<RoleRedirect />} />
         <Route path="/signin" element={<PublicRoute element={<SignIn />} />} />
-        <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
         <Route path="/logout" element={<Logout />} />
 
         {/* Fallback Route */}

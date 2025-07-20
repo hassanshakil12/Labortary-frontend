@@ -51,7 +51,7 @@ const ProfilePage = () => {
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 flex justify-center items-start font-sans">
+    <div className="max-h-screen flex justify-center items-start font-sans">
       <div className="w-full max-w-4xl bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-10 border border-gray-200">
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row items-center gap-6">

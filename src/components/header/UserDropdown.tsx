@@ -60,7 +60,7 @@ export default function UserDropdown() {
   return (
     <div ref={dropdownRef} className="relative flex items-center gap-4">
       {/* Notification Icon */}
-      <Link to="/notification-user">
+      <Link to="/employee-notifications">
         <span className="overflow-hidden h-11 w-11 cursor-pointer flex items-center justify-center">
           <img
             src="/images/notification-icon.png"
@@ -87,7 +87,7 @@ export default function UserDropdown() {
         {open && (
           <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg py-2 z-20">
             <Link
-              to="/profile-emp"
+              to="/employee-profile"
               className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
               onClick={() => setOpen(false)}
             >

@@ -82,7 +82,7 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col lg:flex-row gap-6">
+    <div className="max-h-screen bg-gray-50 font-sans flex flex-col lg:flex-row gap-6">
       {/* Sidebar */}
       <div className="w-full lg:w-1/4 bg-white rounded-xl shadow p-5 text-center">
         <img

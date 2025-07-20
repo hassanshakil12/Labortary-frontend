@@ -85,7 +85,7 @@ const navItems: NavItem[] = [
   {
     icon: <img src="./images/payment.png" alt="Payment" className="w-5 h-5" />,
     name: "Payment",
-    path: "/add-payment",
+    path: "/payments",
   },
   {
     icon: <img src="./images/archive.png" alt="Archive" className="w-5 h-5" />,

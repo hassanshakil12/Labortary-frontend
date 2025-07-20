@@ -205,7 +205,7 @@ const SettingsEmp = () => {
 
       <button
         onClick={() => setProfileModalOpen(true)}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+        className="w-full bg-[#0077B6] text-white py-2 px-4 rounded hover:bg-[#005f8f] transition"
       >
         Update Profile
       </button>
@@ -228,14 +228,14 @@ const SettingsEmp = () => {
                   <img
                     src={imagePreviewUrl}
                     alt="Profile Preview"
-                    className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-2 border-blue-500 shadow-sm"
+                    className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-2 border-[#0077B6] shadow-sm"
                   />
                 ) : (
                   <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center rounded-full border-2 border-dashed border-gray-300 text-gray-400 text-xs text-center">
                     No Image
                   </div>
                 )}
-                <label className="cursor-pointer inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-lg border border-blue-300 hover:bg-blue-200 transition">
+                <label className="cursor-pointer inline-block px-4 py-2 bg-[#0077B620] text-[#0077B6] rounded-lg border border-[#0077B640] hover:bg-[#0077B630] transition">
                   Upload Image
                   <input
                     type="file"
@@ -360,7 +360,7 @@ const SettingsEmp = () => {
               <button
                 onClick={handleSubmit}
                 disabled={submitLoading}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-[#0077B6] text-white px-4 py-2 rounded hover:bg-[#005f8f]"
               >
                 {submitLoading ? "Updating..." : "Save Changes"}
               </button>
@@ -453,7 +453,7 @@ const SettingsEmp = () => {
               <button
                 onClick={handlePasswordChange}
                 disabled={passwordLoading}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-[#0077B6] text-white px-4 py-2 rounded hover:bg-[#005f8f]"
               >
                 {passwordLoading ? "Updating..." : "Change Password"}
               </button>
@@ -497,14 +497,14 @@ const SidebarItem = ({
   loading = false,
   onToggle,
 }: SidebarItemProps) => (
-  <li className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-blue-50 transition cursor-pointer">
+  <li className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#0077B610] transition cursor-pointer">
     <div className="flex items-center gap-3">
       <img src={icon} alt={label} className="w-5 h-5" />
       <span className="text-sm font-medium">{label}</span>
     </div>
     {toggle &&
       (loading ? (
-        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#0077B6]"></div>
       ) : (
         <label className="relative inline-block w-11 h-6">
           <input
@@ -513,7 +513,7 @@ const SidebarItem = ({
             checked={value}
             onChange={onToggle}
           />
-          <div className="w-full h-full bg-gray-300 rounded-full peer-checked:bg-blue-600 transition-all duration-200"></div>
+          <div className="w-full h-full bg-gray-300 rounded-full peer-checked:bg-[#0077B6] transition-all duration-200"></div>
           <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 peer-checked:translate-x-5"></div>
         </label>
       ))}

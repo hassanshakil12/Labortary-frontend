@@ -23,11 +23,13 @@ const Appointments = () => {
     dateAndTime: "",
     sortFields: "createdAt",
     sortOrder: -1,
+    tracking: "",
   });
   const [sortFieldInput, setSortFieldInput] = useState("createdAt");
   const [sortOrderInput, setSortOrderInput] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [laboratories, setLaboratories] = useState<any[]>([]);
+  const [tracking, setTracking] = useState("");
 
   const handleView = (patient: any) => {
     setSelectedPatient(patient);
@@ -49,6 +51,7 @@ const Appointments = () => {
       dateAndTime: dateFilterInput,
       sortFields: sortFieldInput,
       sortOrder: sortOrderInput,
+      tracking: tracking,
     });
     setPage(1);
   };
@@ -60,6 +63,7 @@ const Appointments = () => {
     setDateFilterInput("");
     setSortFieldInput("createdAt");
     setSortOrderInput(-1);
+    setTracking("");
 
     setFilters({
       status: "",
@@ -68,6 +72,7 @@ const Appointments = () => {
       dateAndTime: "",
       sortFields: "createdAt",
       sortOrder: -1,
+      tracking: "",
     });
     setPage(1);
   };
@@ -83,9 +88,11 @@ const Appointments = () => {
         ...(filters.labortary && { labortary: filters.labortary }),
         ...(filters.dateAndTime && { dateAndTime: filters.dateAndTime }),
         ...(filters.sortFields && { sortFields: filters.sortFields }),
+        ...(filters.labortary && { labortary: filters.labortary }),
         ...(filters.sortOrder !== undefined && {
           sortOrder: filters.sortOrder.toString(),
         }),
+        ...(filters.tracking && { tracking: filters.tracking }),
       });
 
       const response = await axios.get(
@@ -109,13 +116,30 @@ const Appointments = () => {
     }
   };
 
-  useEffect(() => {
-    fetchAppointments();
-  }, [page]);
+  const fetchLaboratories = async () => {
+    try {
+      const token = localStorage.getItem("userAuthToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/get-laboratories`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setLaboratories(res.data.data || []);
+    } catch (err: any) {
+      toast.error("Failed to load laboratories");
+    }
+  };
 
   useEffect(() => {
     fetchAppointments();
-  }, [filters]);
+  }, [page, filters]);
+
+  useEffect(() => {
+    fetchLaboratories();
+  }, []);
 
   if (loading) {
     return (
@@ -197,7 +221,9 @@ const Appointments = () => {
                 onChange={(e) => setStatusFilterInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
-                <option value="">All Statuses</option>
+                <option value="" disabled>
+                  Select an status
+                </option>
                 <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>
                 <option value="Rejected">Rejected</option>
@@ -214,7 +240,9 @@ const Appointments = () => {
                 onChange={(e) => setPriorityFilterInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
-                <option value="">All Priorities</option>
+                <option value="" disabled>
+                  Select a priority
+                </option>
                 <option value="Urgent">Urgent</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
@@ -228,16 +256,59 @@ const Appointments = () => {
                 Laboratory
               </label>
               <select
+                name="labortary"
                 value={labortaryFilterInput}
-                onChange={(e) => setLabortaryFilterInput(e.target.value)}
+                onChange={(e) => {
+                  const selectedValue = e.target.value;
+
+                  const selectedLab = laboratories.find(
+                    (lab) => lab._id === selectedValue
+                  );
+
+                  if (selectedLab) {
+                    // From DB
+                    setLabortaryFilterInput(selectedLab.fullName);
+                  } else {
+                    // From static options
+                    setLabortaryFilterInput(selectedValue);
+                  }
+                }}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                required
               >
-                <option value="">All Laboratories</option>
+                <option value="" disabled>
+                  Select a laboratory
+                </option>
+                {laboratories.map((lab) => (
+                  <option key={lab._id} value={lab.fullName}>
+                    {lab.fullName}
+                  </option>
+                ))}
+                {/* Static labs */}
                 <option value="Natera">Natera</option>
                 <option value="Caredx">Caredx</option>
                 <option value="Prosecco study">Prosecco study</option>
                 <option value="Assisted Living">Assisted Living</option>
                 <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Tracking Status
+              </label>
+              <select
+                name="tracking"
+                value={tracking}
+                onChange={(e) => setTracking(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                required
+              >
+                <option value="" disabled>
+                  Select an Status
+                </option>
+                <option value="True">Uploaded</option>
+                <option value="False">Not Uploaded</option>
               </select>
             </div>
 
@@ -449,9 +520,14 @@ const Appointments = () => {
                     Employee ID:{" "}
                     {selectedPatient.employeeId?.employeeId || "N/A"}
                   </p>
+                </div>
+
+                <div className="w-full mb-4">
                   {selectedPatient.documents?.length > 0 && (
                     <div className="text-sm">
-                      <p className="font-semibold mb-1">Documents:</p>
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                        Important Documents
+                      </h2>
                       <ul className="list-disc ml-5 space-y-1">
                         {selectedPatient.documents.map(
                           (doc: string, index: number) => (
@@ -463,7 +539,7 @@ const Appointments = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 download
-                                className="text-blue-600 hover:underline break-all"
+                                className="text-[#0077B6] hover:underline break-all"
                               >
                                 {doc.split("/").pop()}
                               </a>
@@ -473,11 +549,14 @@ const Appointments = () => {
                       </ul>
                     </div>
                   )}
-                  {selectedPatient.trackingId ? (
-                    <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
-                        Tracking ID Image:
-                      </p>
+                </div>
+
+                <div className="w-full mb-4">
+                  <div className="mt-4">
+                    <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                      Tracking ID Image
+                    </h2>
+                    {selectedPatient.trackingId ? (
                       <img
                         src={`${import.meta.env.VITE_API_BASE_URL}/${
                           selectedPatient.trackingId
@@ -485,15 +564,10 @@ const Appointments = () => {
                         alt="Tracking ID"
                         className="w-full max-h-96 object-contain border rounded shadow"
                       />
-                    </div>
-                  ) : (
-                    <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
-                        Tracking ID Image:
-                      </p>
+                    ) : (
                       <p className="text-sm">No tracking ID image available.</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 <div className="w-full mb-4">

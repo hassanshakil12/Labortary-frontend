@@ -28,11 +28,16 @@ const Appointments = () => {
     dateAndTime: "",
     sortFields: "createdAt",
     sortOrder: -1,
+    tracking: "",
+    assigned: "",
   });
   const [sortFieldInput, setSortFieldInput] = useState("createdAt");
   const [sortOrderInput, setSortOrderInput] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
+  const [tracking, setTracking] = useState("");
+  const [assigned, setAssigned] = useState("");
   const [employees, setEmployees] = useState<any[]>([]);
+  const [laboratories, setLaboratories] = useState<any[]>([]);
 
   const handleView = (patient: any) => {
     setSelectedPatient(patient);
@@ -55,6 +60,8 @@ const Appointments = () => {
       dateAndTime: dateFilterInput,
       sortFields: sortFieldInput,
       sortOrder: sortOrderInput,
+      tracking: tracking,
+      assigned: assigned,
     });
     setPage(1);
   };
@@ -67,6 +74,8 @@ const Appointments = () => {
     setDateFilterInput("");
     setSortFieldInput("createdAt");
     setSortOrderInput(-1);
+    setTracking("");
+    setAssigned("");
 
     setFilters({
       status: "",
@@ -76,6 +85,8 @@ const Appointments = () => {
       dateAndTime: "",
       sortFields: "createdAt",
       sortOrder: -1,
+      tracking: "",
+      assigned: "",
     });
     setPage(1);
   };
@@ -109,6 +120,64 @@ const Appointments = () => {
     }
   };
 
+  const handleAssignEmployee = async (
+    appointmentId: string,
+    employeeId: string
+  ) => {
+    const token = localStorage.getItem("userAuthToken");
+    if (!token) {
+      toast.error("You are not authorized. Please login again.");
+      return;
+    }
+
+    setStatusUpdateLoading(appointmentId);
+
+    try {
+      const res = await axios.post(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/v1/admin/assign-appointment/${appointmentId}`,
+        { employeeId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const updatedEmp = employees.find((e) => e._id === employeeId);
+      toast.success(res.data.data?.message || "Employee assigned successfully");
+
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a._id === appointmentId
+            ? {
+                ...a,
+                employeeId: updatedEmp || { employeeId },
+              }
+            : a
+        )
+      );
+
+      // If selectedPatient is open in modal, update it as well
+      setSelectedPatient((prev: { _id: string }) =>
+        prev && prev._id === appointmentId
+          ? {
+              ...prev,
+              employeeId: updatedEmp || { employeeId },
+            }
+          : prev
+      );
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        "Failed to assign employee. Please try again.";
+      toast.error(message);
+    } finally {
+      setStatusUpdateLoading(null);
+    }
+  };
+
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -124,6 +193,8 @@ const Appointments = () => {
         ...(filters.sortOrder !== undefined && {
           sortOrder: filters.sortOrder.toString(),
         }),
+        ...(filters.assigned && { assigned: filters.assigned }),
+        ...(filters.tracking && { tracking: filters.tracking }),
       });
 
       const response = await axios.get(
@@ -164,13 +235,30 @@ const Appointments = () => {
     }
   };
 
+  const fetchLaboratories = async () => {
+    try {
+      const token = localStorage.getItem("userAuthToken");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-laboratories`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setLaboratories(res.data.data || []);
+    } catch (err: any) {
+      toast.error("Failed to load laboratories");
+    }
+  };
+
   useEffect(() => {
-    fetchAppointments();
-  }, [page]);
+    fetchLaboratories();
+  }, []);
 
   useEffect(() => {
     fetchAppointments();
-  }, [filters]);
+  }, [page, filters]);
 
   useEffect(() => {
     fetchEmployees();
@@ -256,7 +344,9 @@ const Appointments = () => {
                 onChange={(e) => setStatusFilterInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
-                <option value="">All Statuses</option>
+                <option value="" disabled>
+                  Select an Status
+                </option>
                 <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>
                 <option value="Rejected">Rejected</option>
@@ -273,7 +363,9 @@ const Appointments = () => {
                 onChange={(e) => setPriorityFilterInput(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               >
-                <option value="">All Priorities</option>
+                <option value="" disabled>
+                  Select a priority
+                </option>
                 <option value="Urgent">Urgent</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
@@ -281,17 +373,40 @@ const Appointments = () => {
               </select>
             </div>
 
-            {/* Laboratory Filter */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">
                 Laboratory
               </label>
               <select
+                name="labortary"
                 value={labortaryFilterInput}
-                onChange={(e) => setLabortaryFilterInput(e.target.value)}
+                onChange={(e) => {
+                  const selectedValue = e.target.value;
+
+                  const selectedLab = laboratories.find(
+                    (lab) => lab._id === selectedValue
+                  );
+
+                  if (selectedLab) {
+                    // From DB
+                    setLabortaryFilterInput(selectedLab.fullName);
+                  } else {
+                    // From static options
+                    setLabortaryFilterInput(selectedValue);
+                  }
+                }}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                required
               >
-                <option value="">All Laboratories</option>
+                <option value="" disabled>
+                  Select a laboratory
+                </option>
+                {laboratories.map((lab) => (
+                  <option key={lab._id} value={lab.fullName}>
+                    {lab.fullName}
+                  </option>
+                ))}
+                {/* Static labs */}
                 <option value="Natera">Natera</option>
                 <option value="Caredx">Caredx</option>
                 <option value="Prosecco study">Prosecco study</option>
@@ -328,6 +443,44 @@ const Appointments = () => {
                     No Employee found
                   </option>
                 )}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Assignment Status
+              </label>
+              <select
+                name="assigned"
+                value={assigned}
+                onChange={(e) => setAssigned(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                required
+              >
+                <option value="" disabled>
+                  Select an Status
+                </option>
+                <option value="True">Assigned</option>
+                <option value="False">Unassigned</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Tracking Status
+              </label>
+              <select
+                name="tracking"
+                value={tracking}
+                onChange={(e) => setTracking(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                required
+              >
+                <option value="" disabled>
+                  Select an Status
+                </option>
+                <option value="True">Uploaded</option>
+                <option value="False">Not Uploaded</option>
               </select>
             </div>
 
@@ -441,7 +594,7 @@ const Appointments = () => {
                 <td className="py-2 px-1 text-center">
                   {statusUpdateLoading === item._id ? (
                     <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#0077B6]"></div>
                     </div>
                   ) : (
                     <select
@@ -550,13 +703,63 @@ const Appointments = () => {
                   <p className="text-sm">
                     Special Instructions: {selectedPatient.specialInstructions}
                   </p>
-                  <p className="text-sm">
-                    Employee ID:{" "}
-                    {selectedPatient.employeeId?.employeeId || "N/A"}
-                  </p>
+                  {selectedPatient.employeeId?.employeeId && (
+                    <p className="text-sm">
+                      Employee ID: {selectedPatient.employeeId?.employeeId}
+                    </p>
+                  )}
+                </div>
+
+                {!selectedPatient.employeeId?.employeeId && (
+                  <div className="w-full mb-4">
+                    <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                      Assign Employee
+                    </h2>
+                    <p className="text-sm flex items-center gap-2">
+                      Employee ID:{" "}
+                      {selectedPatient.employeeId?.employeeId || (
+                        <>
+                          <select
+                            name="employeeId"
+                            value={employeeIdFilterInput}
+                            onChange={async (e) => {
+                              const value = e.target.value;
+                              setEmployeeIdFilterInput(value);
+                              if (value) {
+                                await handleAssignEmployee(
+                                  selectedPatient._id,
+                                  value
+                                );
+                              }
+                            }}
+                            className="max-w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                          >
+                            <option value="" disabled>
+                              Select an employee
+                            </option>
+                            {employees.map((emp) => (
+                              <option key={emp._id} value={emp._id}>
+                                {`${emp.employeeId} - ${emp.fullName}`}
+                              </option>
+                            ))}
+                          </select>
+                          {statusUpdateLoading === selectedPatient._id && (
+                            <span className="mt-2 text-[#0077B6] text-sm">
+                              Assigning...
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                <div className="w-full mb-4">
                   {selectedPatient.documents?.length > 0 && (
                     <div className="text-sm">
-                      <p className="font-semibold mb-1">Documents:</p>
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                        Important Documents
+                      </h2>
                       <ul className="list-disc ml-5 space-y-1">
                         {selectedPatient.documents.map(
                           (doc: string, index: number) => (
@@ -568,7 +771,7 @@ const Appointments = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 download
-                                className="text-blue-600 hover:underline break-all"
+                                className="text-[#0077B6] hover:underline break-all"
                               >
                                 {doc.split("/").pop()}
                               </a>
@@ -578,11 +781,14 @@ const Appointments = () => {
                       </ul>
                     </div>
                   )}
+                </div>
+
+                <div className="w-full mb-4">
                   {selectedPatient.trackingId ? (
                     <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
-                        Tracking ID Image:
-                      </p>
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                        Tracking ID Image
+                      </h2>
                       <img
                         src={`${import.meta.env.VITE_API_BASE_URL}/${
                           selectedPatient.trackingId
@@ -593,9 +799,9 @@ const Appointments = () => {
                     </div>
                   ) : (
                     <div className="mt-4">
-                      <p className="font-semibold text-sm mb-1">
-                        Tracking ID Image:
-                      </p>
+                      <h2 className="text-lg text-gray-500 font-semibold mb-1">
+                        Tracking ID Image
+                      </h2>
                       <p className="text-sm">No tracking ID image available.</p>
                     </div>
                   )}

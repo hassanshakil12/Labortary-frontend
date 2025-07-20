@@ -23,6 +23,17 @@ const navItems: NavItem[] = [
   {
     icon: (
       <img
+        src="./images/add-appointment.png"
+        alt="Add Appointments"
+        className="w-5 h-5"
+      />
+    ),
+    name: "Add Appointments",
+    path: "/laboratory-add-appointment",
+  },
+  {
+    icon: (
+      <img
         src="./images/appointment.png"
         alt="Appointments"
         className="w-5 h-5"
@@ -34,7 +45,7 @@ const navItems: NavItem[] = [
   {
     icon: <img src="./images/archive.png" alt="Archive" className="w-5 h-5" />,
     name: "Archive",
-    path: "/laboratory-archeive",
+    path: "/laboratory-archive",
   },
 ];
 
