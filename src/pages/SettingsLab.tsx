@@ -55,8 +55,16 @@ const SettingsLab = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setUser(res.data.data);
-        setForm(res.data.data);
+        const userData = res.data.data;
+        setUser(userData);
+        setForm(userData);
+
+        setSettings({
+          activate: userData.isActive,
+          notifications: userData.isNotification,
+          privacy: false,
+          twoFactor: false,
+        });
         // if (res.data.data?.timings) {
         //   setForm((prev: any) => ({
         //     ...prev,

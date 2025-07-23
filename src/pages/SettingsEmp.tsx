@@ -11,7 +11,7 @@ const SettingsEmp = () => {
     activate: true,
     notifications: true,
     privacy: false,
-    twoFactor: true,
+    twoFactor: false,
   });
 
   const [loadingKey, setLoadingKey] = useState<null | string>(null);
@@ -41,8 +41,16 @@ const SettingsEmp = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setUser(res.data.data);
-        setForm(res.data.data);
+        const userData = res.data.data;
+        setUser(userData);
+        setForm(userData);
+
+        setSettings({
+          activate: userData.isActive,
+          notifications: userData.isNotification,
+          privacy: false,
+          twoFactor: false,
+        });
       } catch (err) {
         toast.error("Failed to load user");
       }
