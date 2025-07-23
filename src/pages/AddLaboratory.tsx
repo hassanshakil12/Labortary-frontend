@@ -247,8 +247,6 @@ const AddLaboratory: React.FC = () => {
       }
     });
 
-    console.log("Submitting timings:", formData.timings);
-
     // Append timings in nested format
     formattedTimings.forEach((dayBlock, index) => {
       payload.append(`timings[${index}][day]`, dayBlock.day);

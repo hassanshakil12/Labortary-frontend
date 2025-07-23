@@ -26,7 +26,6 @@ const BookedRankingTable = () => {
           }
         );
 
-        console.log("Today's Appointments Data:", data);
         setAppointments(data?.data || []);
       } catch (error: any) {
         toast.error(

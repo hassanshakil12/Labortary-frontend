@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/AuthPages/SignIn";
-import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import Archeive from "./pages/Archeive";
 import { ScrollToTop } from "./components/common/ScrollToTop";
@@ -19,7 +18,6 @@ import ArcheiveUser from "./pages/ArcheiveUser";
 import UserNotification from "./components/UserNotification";
 import LaboratoryNotification from "./components/LaboratoryNotification";
 import AdminNotifications from "./components/AdminNotifications";
-import MailToAdmin from "./pages/MailToAdmin";
 import Appointments from "./pages/Appointments";
 import AddEmploye from "./pages/AddEmploye";
 import AddLaboratory from "./pages/AddLaboratory";
