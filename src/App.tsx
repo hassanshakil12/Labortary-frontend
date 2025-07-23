@@ -1,5 +1,5 @@
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -37,9 +37,42 @@ import ArcheiveLab from "./pages/ArcheiveLab";
 import ProfileLab from "./pages/ProfileLab";
 import SettingsLab from "./pages/SettingsLab";
 import AddAppointmentLab from "./pages/AddAppointmentLab";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
+import { getMessaging, onMessage } from "firebase/messaging";
+
+const requestNotificationPermission = async () => {
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    console.warn("Notification permission not granted");
+  } else {
+    console.log("✅ Notification permission granted");
+  }
+};
+
+const messaging = getMessaging();
+onMessage(messaging, (payload) => {
+  if (payload.notification) {
+    const { title, body } = payload.notification;
+
+    toast(`${body}`, {
+      icon: "📢",
+    });
+
+    if (Notification.permission === "granted" && title && body) {
+      new Notification(title, {
+        body: body,
+        icon: "/logo.png",
+      });
+    }
+  }
+});
 
 export default function App() {
+  useEffect(() => {
+    if ("Notification" in window) {
+      requestNotificationPermission();
+    }
+  }, []);
   return (
     <Router>
       <div className="z-[999999] fixed top-0 left-0 w-full pointer-events-none">

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import axios from "axios";
+import { getFcmToken } from "../../utils/firebase";
 
 export const EyeIcon = AiOutlineEye;
 export const EyeCloseIcon = AiOutlineEyeInvisible;
@@ -41,6 +43,26 @@ const LoginPage = () => {
 
       if (res.ok && result.status) {
         localStorage.setItem("userAuthToken", result.data.userAuthToken);
+
+        await Notification.requestPermission();
+        const fcmToken = await getFcmToken();
+
+        if (fcmToken) {
+          await axios.post(
+            `${import.meta.env.VITE_API_BASE_URL}/api/v1/common/generate-fcm`,
+            {
+              fcmToken,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${result.data.userAuthToken}`,
+              },
+            }
+          );
+        } else {
+          console.warn("No FCM token generated.");
+        }
+
         navigate(
           result.data.role === "admin"
             ? "/dashboard"

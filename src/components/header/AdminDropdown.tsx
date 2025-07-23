@@ -8,6 +8,7 @@ export default function UserDropdown() {
     "images/profile_img.svg"
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleLogout = () => {
     console.log("Logging out...");
@@ -28,8 +29,6 @@ export default function UserDropdown() {
             },
           }
         );
-
-        console.log("User profile response:", response.data.data.image);
 
         if (response?.data?.data?.image) {
           setProfileImage(response.data.data.image);
@@ -59,17 +58,55 @@ export default function UserDropdown() {
     };
   }, []);
 
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem("userAuthToken");
+      if (!token) return;
+
+      try {
+        const response = await axios.get(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/v1/common/get-notifications`, // your getNotifications route
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response?.data?.data?.length) {
+          const unread = response.data.data.filter((n: any) => !n.isRead);
+          setUnreadCount(unread.length);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
   return (
     <div ref={dropdownRef} className="relative flex items-center gap-4">
       {/* Notification Icon */}
       <Link to="/notifications">
-        <span className="overflow-hidden h-11 w-11 cursor-pointer flex items-center justify-center">
+        <div className="relative h-11 w-11 cursor-pointer flex items-center justify-center">
           <img
             src="/images/notification-icon.png"
             alt="Notification"
             className="h-8 w-8"
+            onClick={() => {
+              setUnreadCount(0);
+            }}
           />
-        </span>
+
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+              {unreadCount}
+            </span>
+          )}
+        </div>
       </Link>
 
       {/* User Avatar */}

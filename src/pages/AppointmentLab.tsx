@@ -400,15 +400,15 @@ const Appointments = () => {
             ))}
           </tr>
         </thead>
-        {appointments.length === 0 ? (
-          <tr>
-            <td colSpan={9} className="text-center py-6 text-gray-500">
-              No appointments scheduled.
-            </td>
-          </tr>
-        ) : (
-          <tbody className="divide-y divide-gray-200">
-            {appointments.map((item, i) => (
+        <tbody className="divide-y divide-gray-200">
+          {appointments.length === 0 ? (
+            <tr>
+              <td colSpan={9} className="text-center py-6 text-gray-500">
+                No appointments scheduled.
+              </td>
+            </tr>
+          ) : (
+            appointments.map((item, i) => (
               <tr key={item._id}>
                 <td className="py-2 px-1 text-center">{i + 1}</td>
                 <td className="py-2 px-1 text-center">
@@ -448,9 +448,9 @@ const Appointments = () => {
                   </span>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        )}
+            ))
+          )}
+        </tbody>
       </table>
 
       {appointments.length > 0 && (

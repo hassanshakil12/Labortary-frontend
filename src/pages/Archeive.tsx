@@ -422,15 +422,15 @@ const Archeive = () => {
             ))}
           </tr>
         </thead>
-        {appointments.length === 0 ? (
-          <tr>
-            <td colSpan={9} className="text-center py-6 text-gray-500">
-              No archived appointments found.
-            </td>
-          </tr>
-        ) : (
-          <tbody className="divide-y divide-gray-200">
-            {appointments.map((item, idx) => (
+        <tbody className="divide-y divide-gray-200">
+          {appointments.length === 0 ? (
+            <tr>
+              <td colSpan={9} className="text-center py-6 text-gray-500">
+                No archived appointments found.
+              </td>
+            </tr>
+          ) : (
+            appointments.map((item, idx) => (
               <tr key={item._id}>
                 <td className="py-2 px-1 text-xs md:text-sm text-center">
                   {idx + 1}
@@ -487,9 +487,9 @@ const Archeive = () => {
                   </span>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        )}
+            ))
+          )}
+        </tbody>
       </table>
 
       {appointments.length > 0 && (

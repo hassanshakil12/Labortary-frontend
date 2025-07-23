@@ -355,7 +355,6 @@ const Archeive = () => {
             ))}
           </tr>
         </thead>
-
         <tbody className="divide-y divide-gray-200">
           {appointments.length === 0 ? (
             <tr>

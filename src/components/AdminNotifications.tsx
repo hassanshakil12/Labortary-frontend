@@ -4,12 +4,11 @@ import toast from "react-hot-toast";
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadNotificationIds, setUnreadNotificationIds] = useState<string[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
 
   const fetchNotifications = async () => {
     try {
@@ -28,7 +27,25 @@ const NotificationsPage = () => {
         }
       );
 
-      setNotifications(data?.data || []);
+      const allNotifications = data?.data || [];
+      const unread = allNotifications
+        .filter((n: any) => !n.isRead)
+        .map((n: any) => n._id);
+
+      setNotifications(allNotifications);
+      setUnreadNotificationIds(unread);
+
+      if (unread.length > 0) {
+        await axios.post(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/v1/common/read-notifications`,
+          { notifications: unread },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || "Failed to fetch notifications"
@@ -69,6 +86,10 @@ const NotificationsPage = () => {
       setDeleting(false);
     }
   };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   if (loading) {
     return (
@@ -118,29 +139,34 @@ const NotificationsPage = () => {
           )}
         </div>
 
-        {notifications.length === 0 ? (
-          <div className="text-center text-gray-500 text-sm mt-10">
-            No notifications available.
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {notifications.map((note, index) => (
+        <div className="space-y-4">
+          {notifications.map((note, index) => {
+            const isUnreadInThisRender = unreadNotificationIds.includes(
+              note._id
+            );
+            return (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-4"
+                className={`${
+                  isUnreadInThisRender ? "bg-[#0077b630]" : "bg-white"
+                } rounded-xl shadow-sm hover:shadow-md transition p-4`}
               >
                 <h3 className="text-gray-800 font-medium">{note.title}</h3>
                 <p className="text-sm text-gray-600">{note.body}</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p
+                  className={`text-xs ${
+                    isUnreadInThisRender ? "text-gray-600" : "text-gray-400"
+                  }  mt-1`}
+                >
                   {new Date(note.createdAt).toLocaleString("en-US", {
                     dateStyle: "medium",
                     timeStyle: "short",
                   })}
                 </p>
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
