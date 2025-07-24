@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -9,16 +10,18 @@ const NotificationsPage = () => {
   );
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+  }
 
   const fetchNotifications = async () => {
+    setLoading(true);
     try {
-      const token = localStorage.getItem("userAuthToken");
-      if (!token) {
-        toast.error("Authentication token is missing.");
-        return;
-      }
-
-      const { data } = await axios.get(
+      const response = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/common/get-notifications`,
         {
           headers: {
@@ -27,26 +30,46 @@ const NotificationsPage = () => {
         }
       );
 
-      const allNotifications = data?.data || [];
-      const unread = allNotifications
-        .filter((n: any) => !n.isRead)
-        .map((n: any) => n._id);
+      if (response.data.status) {
+        const allNotifications = response.data?.data || [];
+        const unread = allNotifications
+          .filter((n: any) => !n.isRead)
+          .map((n: any) => n._id);
 
-      setNotifications(allNotifications);
-      setUnreadNotificationIds(unread);
+        setNotifications(allNotifications);
+        setUnreadNotificationIds(unread);
 
-      if (unread.length > 0) {
-        await axios.post(
-          `${
-            import.meta.env.VITE_API_BASE_URL
-          }/api/v1/common/read-notifications`,
-          { notifications: unread },
-          {
-            headers: { Authorization: `Bearer ${token}` },
+        if (unread.length > 0) {
+          try {
+            await axios.post(
+              `${
+                import.meta.env.VITE_API_BASE_URL
+              }/api/v1/common/read-notifications`,
+              { notifications: unread },
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+          } catch (error: any) {
+            if (error.response?.data?.code === 401) {
+              localStorage.removeItem("userAuthToken");
+              toast.error("Unauthorized access. Please log in again.");
+              navigate("/signin");
+            }
+            toast.error(
+              error?.response?.data?.message ||
+                "Failed to mark notifications as read"
+            );
           }
-        );
+        }
+        setLoading(false);
       }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to fetch notifications"
       );
@@ -56,15 +79,9 @@ const NotificationsPage = () => {
   };
 
   const handleDeleteAll = async () => {
-    const token = localStorage.getItem("userAuthToken");
-    if (!token) {
-      toast.error("Authentication token is missing.");
-      return;
-    }
-
     setDeleting(true);
     try {
-      await axios.post(
+      const response = await axios.post(
         `${
           import.meta.env.VITE_API_BASE_URL
         }/api/v1/common/delete-notifications`,
@@ -76,9 +93,19 @@ const NotificationsPage = () => {
         }
       );
 
-      setNotifications([]);
-      toast.success("All notifications deleted successfully.");
+      if (response.data.status) {
+        setNotifications([]);
+        toast.success("All notifications deleted successfully.");
+        setLoading(false);
+      } else {
+        toast.error("Failed to delete notifications.");
+      }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to delete notifications"
       );

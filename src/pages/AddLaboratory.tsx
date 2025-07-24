@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 interface InputFieldProps {
   label: string;
@@ -57,6 +58,7 @@ const AddLaboratory: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
 
   const weekDays = [
     "Monday",
@@ -221,20 +223,23 @@ const AddLaboratory: React.FC = () => {
     return new Date(now); // or return now;
   };
 
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-   if (!validate()) {
-     if (errors.timings) {
-       toast.error(errors.timings); // 👈 show toast for timing issue
-     }
-     return;
-   }
-
+    if (!validate()) {
+      if (errors.timings) {
+        toast.error(errors.timings); // 👈 show toast for timing issue
+      }
+      return;
+    }
     setLoading(true);
-    const token = localStorage.getItem("userAuthToken");
-
     const payload = new FormData();
-
     const formattedTimings = formData.timings.map((entry) => ({
       day: entry.day,
       time: entry.time.map((t) => convertToDate(t)), // ⬅ convert time strings
@@ -260,7 +265,7 @@ const AddLaboratory: React.FC = () => {
     }
 
     try {
-      const { data } = await axios.post(
+      const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/add-laboratory`,
         payload,
         {
@@ -271,23 +276,29 @@ const AddLaboratory: React.FC = () => {
         }
       );
 
-      toast.success(data.message || "Laboratory added successfully!");
-
-      // Reset form
-      setFormData({
-        email: "",
-        username: "",
-        password: "",
-        fullName: "",
-        address: "",
-        contactNumber: "",
-        about: "",
-        timings: [],
-      });
-      setImageFile(null);
+      if (res.data.status) {
+        toast.success(res.data.message || "Laboratory added successfully!");
+        setFormData({
+          email: "",
+          username: "",
+          password: "",
+          fullName: "",
+          address: "",
+          contactNumber: "",
+          about: "",
+          timings: [],
+        });
+        setImageFile(null);
+      } else {
+        toast.error("Failed to add laboratory");
+      }
     } catch (err: any) {
-      const message = err.response?.data?.message || "Failed to add laboratory";
-      toast.error(message);
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(err?.response?.data?.message || "Failed to add laboratory");
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 interface InputFieldProps {
   label: string;
@@ -62,6 +63,14 @@ const PatientUploadForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
   const [laboratories, setLaboratories] = useState<any[]>([]);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -89,7 +98,6 @@ const PatientUploadForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
-    const token = localStorage.getItem("userAuthToken");
     const payload = new FormData();
 
     Object.entries(formData).forEach(([key, value]) => {
@@ -104,7 +112,7 @@ const PatientUploadForm: React.FC = () => {
     }
 
     try {
-      await axios.post(
+      const resp = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/create-appointment`,
         payload,
         {
@@ -115,30 +123,38 @@ const PatientUploadForm: React.FC = () => {
         }
       );
 
-      toast.success("Appointment created successfully!");
-
-      setFormData({
-        patientName: "",
-        email: "",
-        contactNumber: "",
-        address: "",
-        dateOfBirth: "",
-        gender: "",
-        employeeId: "",
-        labortary: "",
-        fees: "",
-        priorityLevel: "",
-        appointmentDateTime: "",
-        status: "",
-        specialInstructions: "",
-        accountNumber: "",
-        age: "",
-        laboratoryId: "",
-      });
-      setImage(null);
-      setImagePreviewUrl(null);
-      setDocuments(null);
+      if (resp.data.status) {
+        toast.success("Appointment created successfully!");
+        setFormData({
+          patientName: "",
+          email: "",
+          contactNumber: "",
+          address: "",
+          dateOfBirth: "",
+          gender: "",
+          employeeId: "",
+          labortary: "",
+          fees: "",
+          priorityLevel: "",
+          appointmentDateTime: "",
+          status: "",
+          specialInstructions: "",
+          accountNumber: "",
+          age: "",
+          laboratoryId: "",
+        });
+        setImage(null);
+        setImagePreviewUrl(null);
+        setDocuments(null);
+      } else {
+        toast.error("Failed to create appointment");
+      }
     } catch (err: any) {
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         err.response?.data?.message || "Failed to create appointment"
       );
@@ -147,45 +163,63 @@ const PatientUploadForm: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const token = localStorage.getItem("userAuthToken");
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-employees`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  const fetchEmployees = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-employees`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.status) {
         setEmployees(res.data.data || []);
-      } catch (err: any) {
+      } else {
         toast.error("Failed to load employees");
       }
-    };
+    } catch (err: any) {
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(err.response?.data?.message || "Failed to load employees");
+    }
+  };
 
+  const fetchLaboratories = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-laboratories`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.status) {
+        setLaboratories(res.data.data || []);
+      } else {
+        toast.error("Failed to load laboratories");
+      }
+    } catch (err: any) {
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(err.response?.data?.message || "Failed to load laboratories");
+    }
+  };
+
+  useEffect(() => {
     fetchEmployees();
   }, []);
 
   useEffect(() => {
-    const fetchLaboratories = async () => {
-      try {
-        const token = localStorage.getItem("userAuthToken");
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-laboratories`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setLaboratories(res.data.data || []);
-      } catch (err: any) {
-        toast.error("Failed to load laboratories");
-      }
-    };
-
     fetchLaboratories();
   }, []);
 

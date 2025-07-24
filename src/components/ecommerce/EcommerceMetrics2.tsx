@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 interface DashboardData {
   totalAppointments: number;
@@ -12,35 +13,46 @@ interface DashboardData {
 export default function EcommerceMetrics() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/get-dashboard`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.status) {
+        setData(response.data?.data || null);
+      } else {
+        toast.error(response.data.message || "Failed to fetch dashboard data");
+      }
+    } catch (err: any) {
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        err?.response?.data?.message || "Failed to load dashboard metrics"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const token = localStorage.getItem("userAuthToken");
-        if (!token) {
-          toast.error("Authentication token is missing.");
-          return;
-        }
-
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/get-dashboard`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setData(data?.data || null);
-      } catch (err: any) {
-        toast.error(
-          err?.response?.data?.message || "Failed to load dashboard metrics"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, []);
 

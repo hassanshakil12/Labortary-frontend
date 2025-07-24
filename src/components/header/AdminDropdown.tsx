@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 export default function UserDropdown() {
   const [open, setOpen] = useState(false);
@@ -9,81 +11,72 @@ export default function UserDropdown() {
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    console.log("Logging out...");
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.status) {
+        setProfileImage(response.data.data.image);
+      } else {
+        toast.error("Profile data not found.");
+      }
+    } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch profile data"
+      );
+    }
   };
 
-  // Fetch user profile image
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      const token = localStorage.getItem("userAuthToken");
-      if (!token) return;
-
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response?.data?.data?.image) {
-          setProfileImage(response.data.data.image);
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/common/get-notifications`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      } catch (error) {
-        console.error("Failed to fetch user profile image:", error);
-      }
-    };
+      );
 
-    fetchUserProfile();
-  }, []);
-
-  // Close dropdown when clicked outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      const token = localStorage.getItem("userAuthToken");
-      if (!token) return;
-
-      try {
-        const response = await axios.get(
-          `${
-            import.meta.env.VITE_API_BASE_URL
-          }/api/v1/common/get-notifications`, // your getNotifications route
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
+      if (response.data.status) {
         if (response?.data?.data?.length) {
           const unread = response.data.data.filter((n: any) => !n.isRead);
           setUnreadCount(unread.length);
         }
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
+      } else {
+        toast.error("Failed to fetch notifications.");
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
 
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  useEffect(() => {
     fetchNotifications();
   }, []);
 

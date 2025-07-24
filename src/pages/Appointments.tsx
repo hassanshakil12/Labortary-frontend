@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const Appointments = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -38,6 +39,7 @@ const Appointments = () => {
   const [assigned, setAssigned] = useState("");
   const [employees, setEmployees] = useState<any[]>([]);
   const [laboratories, setLaboratories] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const handleView = (patient: any) => {
     setSelectedPatient(patient);
@@ -91,10 +93,15 @@ const Appointments = () => {
     setPage(1);
   };
 
-  const handleStatusChange = async (id: string, newStatus: string) => {
-    const token = localStorage.getItem("userAuthToken");
-    setStatusUpdateLoading(id);
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
 
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    setStatusUpdateLoading(id);
     try {
       const res = await axios.post(
         `${
@@ -104,17 +111,26 @@ const Appointments = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success(res.data.message || "Status updated");
-      setStatusMap((prev) => ({ ...prev, [id]: newStatus }));
+      if (res.data.status) {
+        toast.success(res.data.message || "Status updated");
+        setStatusMap((prev) => ({ ...prev, [id]: newStatus }));
 
-      setAppointments((prev) =>
-        prev.map((a) => (a._id === id ? { ...a, status: newStatus } : a))
-      );
+        setAppointments((prev) =>
+          prev.map((a) => (a._id === id ? { ...a, status: newStatus } : a))
+        );
+      } else {
+        toast.error("Failed to update status");
+      }
     } catch (err: any) {
-      const message =
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
         err?.response?.data?.message ||
-        "Failed to update status. Please try again.";
-      toast.error(message);
+          "Failed to update status. Please try again."
+      );
     } finally {
       setStatusUpdateLoading(null);
     }
@@ -124,14 +140,7 @@ const Appointments = () => {
     appointmentId: string,
     employeeId: string
   ) => {
-    const token = localStorage.getItem("userAuthToken");
-    if (!token) {
-      toast.error("You are not authorized. Please login again.");
-      return;
-    }
-
     setStatusUpdateLoading(appointmentId);
-
     try {
       const res = await axios.post(
         `${
@@ -145,34 +154,45 @@ const Appointments = () => {
         }
       );
 
-      const updatedEmp = employees.find((e) => e._id === employeeId);
-      toast.success(res.data.data?.message || "Employee assigned successfully");
+      if (res.data.status) {
+        const updatedEmp = employees.find((e) => e._id === employeeId);
+        toast.success(
+          res.data.data?.message || "Employee assigned successfully"
+        );
 
-      setAppointments((prev) =>
-        prev.map((a) =>
-          a._id === appointmentId
+        setAppointments((prev) =>
+          prev.map((a) =>
+            a._id === appointmentId
+              ? {
+                  ...a,
+                  employeeId: updatedEmp || { employeeId },
+                }
+              : a
+          )
+        );
+
+        // If selectedPatient is open in modal, update it as well
+        setSelectedPatient((prev: { _id: string }) =>
+          prev && prev._id === appointmentId
             ? {
-                ...a,
+                ...prev,
                 employeeId: updatedEmp || { employeeId },
               }
-            : a
-        )
-      );
-
-      // If selectedPatient is open in modal, update it as well
-      setSelectedPatient((prev: { _id: string }) =>
-        prev && prev._id === appointmentId
-          ? {
-              ...prev,
-              employeeId: updatedEmp || { employeeId },
-            }
-          : prev
-      );
+            : prev
+        );
+      } else {
+        toast.error("Failed to assign employee");
+      }
     } catch (err: any) {
-      const message =
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
         err?.response?.data?.message ||
-        "Failed to assign employee. Please try again.";
-      toast.error(message);
+          "Failed to assign employee. Please try again."
+      );
     } finally {
       setStatusUpdateLoading(null);
     }
@@ -181,7 +201,6 @@ const Appointments = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("userAuthToken");
       const queryParams = new URLSearchParams({
         page: String(page),
         ...(filters.status && { status: filters.status }),
@@ -197,7 +216,7 @@ const Appointments = () => {
         ...(filters.tracking && { tracking: filters.tracking }),
       });
 
-      const response = await axios.get(
+      const res = await axios.get(
         `${
           import.meta.env.VITE_API_BASE_URL
         }/api/v1/admin/get-appointments?${queryParams.toString()}`,
@@ -206,13 +225,22 @@ const Appointments = () => {
         }
       );
 
-      setAppointments(response.data.data.appointments);
-      setTotalPages(response.data.data.totalPages || 1); // in case backend adds totalPages
+      if (res.data.status) {
+        setAppointments(res.data.data.appointments);
+        setTotalPages(res.data.data.totalPages || 1);
+      } else {
+        toast.error("Failed to fetch appointments");
+      }
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message || "Failed to fetch appointments";
-      toast.error(message);
-      setError(message);
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        err?.response?.data?.message || "Failed to fetch appointments"
+      );
+      setError(err?.response?.data?.message || "Failed to fetch appointments");
     } finally {
       setLoading(false);
     }
@@ -220,7 +248,6 @@ const Appointments = () => {
 
   const fetchEmployees = async () => {
     try {
-      const token = localStorage.getItem("userAuthToken");
       const res = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-employees`,
         {
@@ -229,15 +256,24 @@ const Appointments = () => {
           },
         }
       );
-      setEmployees(res.data.data || []);
+
+      if (res.data.status) {
+        setEmployees(res.data.data || []);
+      } else {
+        toast.error("Failed to load employees");
+      }
     } catch (err: any) {
-      toast.error("Failed to load employees");
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(err?.response?.data?.message || "Failed to load employees");
     }
   };
 
   const fetchLaboratories = async () => {
     try {
-      const token = localStorage.getItem("userAuthToken");
       const res = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-laboratories`,
         {
@@ -246,9 +282,21 @@ const Appointments = () => {
           },
         }
       );
-      setLaboratories(res.data.data || []);
+
+      if (res.data.status) {
+        setLaboratories(res.data.data || []);
+      } else {
+        toast.error("Failed to load laboratories");
+      }
     } catch (err: any) {
-      toast.error("Failed to load laboratories");
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        err?.response?.data?.message || "Failed to load laboratories"
+      );
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 interface InputFieldProps {
   label: string;
@@ -60,6 +61,14 @@ const AddEmployee: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -142,16 +151,15 @@ const AddEmployee: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     setLoading(true);
-    const token = localStorage.getItem("userAuthToken");
 
     const payload = new FormData();
+
     Object.entries(formData).forEach(([key, val]) => payload.append(key, val));
     if (imageFile) payload.append("image", imageFile);
 
     try {
-      const { data } = await axios.post(
+      const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/add-employee`,
         payload,
         {
@@ -162,26 +170,34 @@ const AddEmployee: React.FC = () => {
         }
       );
 
-      toast.success(data.message || "Employee added successfully!");
-      setFormData({
-        fullName: "",
-        email: "",
-        contactNumber: "",
-        address: "",
-        hireDate: "",
-        employeeId: "",
-        username: "",
-        password: "",
-        jobRole: "",
-        shiftTiming: "",
-        about: "",
-        gender: "",
-        department: "",
-      });
-      setImageFile(null);
+      if (res.data.status) {
+        toast.success(res.data.message || "Employee added successfully!");
+        setFormData({
+          fullName: "",
+          email: "",
+          contactNumber: "",
+          address: "",
+          hireDate: "",
+          employeeId: "",
+          username: "",
+          password: "",
+          jobRole: "",
+          shiftTiming: "",
+          about: "",
+          gender: "",
+          department: "",
+        });
+        setImageFile(null);
+      } else {
+        toast.error("Failed to add employee");
+      }
     } catch (err: any) {
-      const message = err.response?.data?.message || "Failed to add employee";
-      toast.error(message);
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(err?.response?.data?.message || "Failed to add employee");
     } finally {
       setLoading(false);
     }

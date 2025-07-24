@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
 
 export const EyeIcon = AiOutlineEye;
 export const EyeCloseIcon = AiOutlineEyeInvisible;
@@ -29,20 +30,30 @@ const Settings = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-profile`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-profile`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.data.status) {
         const userData = res.data.data;
         setUser(userData);
+        setImagePreviewUrl(
+          `${import.meta.env.VITE_API_BASE_URL}/${userData.image}`
+        );
         setForm(userData);
 
         setSettings({
@@ -51,12 +62,21 @@ const Settings = () => {
           privacy: false,
           twoFactor: false,
         });
-      } catch (err) {
-        toast.error("Failed to load user");
+      } else {
+        toast.error("Failed to load user data");
       }
-    };
+    } catch (err: any) {
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(err?.response?.data?.message || "Failed to load user");
+    }
+  };
 
-    if (token) fetchUser();
+  useEffect(() => {
+    fetchUser();
   }, [token]);
 
   useEffect(() => {

@@ -1,42 +1,53 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const BookedRankingTable = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/v1/laboratory/get-today-appointments`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.status) {
+        setAppointments(response.data?.data || []);
+      } else {
+        toast.error("Failed to fetch appointments");
+      }
+    } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch today's appointments"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      const token = localStorage.getItem("userAuthToken");
-      if (!token) {
-        toast.error("Authentication token is missing.");
-        return;
-      }
-
-      try {
-        const { data } = await axios.get(
-          `${
-            import.meta.env.VITE_API_BASE_URL
-          }/api/v1/laboratory/get-today-appointments`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setAppointments(data?.data || []);
-      } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message ||
-            "Failed to fetch today's appointments"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
   }, []);
 

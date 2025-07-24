@@ -1,39 +1,49 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.status) {
+        setProfile(res.data?.data || null);
+      } else {
+        toast.error("Failed to fetch profile");
+      }
+    } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(error?.response?.data?.message || "Failed to fetch profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("userAuthToken");
-        if (!token) {
-          toast.error("Authentication token is missing.");
-          return;
-        }
-
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setProfile(data?.data || null);
-      } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message || "Failed to fetch profile"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProfile();
   }, []);
 
@@ -75,8 +85,8 @@ const ProfilePage = () => {
             <p className="text-gray-500 mt-1">{profile.jobRole}</p>
             <div className="mt-2 text-sm text-gray-600 space-y-1">
               <p>
-                Employee ID:{" "}
-                <span className="font-semibold">{profile.employeeId}</span>
+                Username:{" "}
+                <span className="font-semibold">{profile.username}</span>
               </p>
               <p>
                 Joined:{" "}
@@ -103,11 +113,11 @@ const ProfilePage = () => {
           </ProfileSection>
 
           <ProfileSection title="Basic Information">
-            <InfoRow label="Department" value={profile.department || "N/A"} />
             <InfoRow
               label="Status"
               value={profile.isActive ? "Online" : "Offline"}
             />
+            <InfoRow label="About" value={profile.about || "N/A"} />
           </ProfileSection>
         </div>
         {/* Timing Information */}

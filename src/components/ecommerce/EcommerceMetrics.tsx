@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 export default function EcommerceMetrics() {
   const [loading, setLoading] = useState(true);
@@ -21,52 +22,65 @@ export default function EcommerceMetrics() {
       label: "Patients", // We'll map this to "paid appointments"
     },
   ]);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
+  const fetchDashboard = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-dashboard`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+
+      const dashboard = response.data?.data || {};
+      setMetrics([
+        {
+          icon: "./images/doctor_icon.svg",
+          count: dashboard.totalEmployees || 0,
+          label: "Employees",
+        },
+        {
+          icon: "./images/appointments_icon.svg",
+          count: dashboard.totalAppointments || 0,
+          label: "Appointments",
+        },
+        {
+          icon: "./images/patients_icon.svg",
+          count: dashboard.pendingAppointments || 0,
+          label: "Pending",
+        },
+      ]);
+    } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch dashboard data"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      const token = localStorage.getItem("userAuthToken");
-      if (!token) {
-        toast.error("Authentication token is missing.");
-        return;
-      }
-
-      try {
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-dashboard`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const dashboard = data?.data || {};
-        setMetrics([
-          {
-            icon: "./images/doctor_icon.svg",
-            count: dashboard.totalEmployees || 0,
-            label: "Employees",
-          },
-          {
-            icon: "./images/appointments_icon.svg",
-            count: dashboard.totalAppointments || 0,
-            label: "Appointments",
-          },
-          {
-            icon: "./images/patients_icon.svg",
-            count: dashboard.pendingAppointments || 0,
-            label: "Pending",
-          },
-        ]);
-      } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message || "Failed to fetch dashboard data"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboard();
   }, []);
 

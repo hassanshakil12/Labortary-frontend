@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
 
 export const EyeIcon = AiOutlineEye;
 export const EyeCloseIcon = AiOutlineEyeInvisible;
@@ -29,35 +30,76 @@ const SettingsLab = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const navigate = useNavigate();
 
-  // const defaultTimings = [
-  //   { day: "Monday", time: ["", ""] },
-  //   { day: "Tuesday", time: ["", ""] },
-  //   { day: "Wednesday", time: ["", ""] },
-  //   { day: "Thursday", time: ["", ""] },
-  //   { day: "Friday", time: ["", ""] },
-  //   { day: "Saturday", time: ["", ""] },
-  //   { day: "Sunday", time: ["", ""] },
-  // ];
-
-  // const [form, setForm] = useState<any>({
-  //   timings: defaultTimings,
-  // });
+  const defaultTimings = [
+    { day: "Monday", time: ["", ""] },
+    { day: "Tuesday", time: ["", ""] },
+    { day: "Wednesday", time: ["", ""] },
+    { day: "Thursday", time: ["", ""] },
+    { day: "Friday", time: ["", ""] },
+    { day: "Saturday", time: ["", ""] },
+    { day: "Sunday", time: ["", ""] },
+  ];
 
   const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-profile`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+  const convertTo24HourFormat = (time12h: string) => {
+    if (!time12h) return "";
+    const [time, modifier] = time12h.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    if (modifier === "PM" && hours !== "12") {
+      hours = String(Number(hours) + 12);
+    }
+    if (modifier === "AM" && hours === "12") {
+      hours = "00";
+    }
+
+    return `${hours.padStart(2, "0")}:${minutes}`;
+  };
+
+  const fetchUser = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-profile`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.data.status) {
         const userData = res.data.data;
         setUser(userData);
-        setForm(userData);
+        setImagePreviewUrl(
+          `${import.meta.env.VITE_API_BASE_URL}/${userData.image}`
+        );
+        console.log("User data:", userData);
+
+        const userTimingsMap = (userData.timings || []).reduce(
+          (acc: any, curr: any) => {
+            acc[curr.day] = curr;
+            return acc;
+          },
+          {}
+        );
+
+        const normalizedTimings = defaultTimings.map((dayObj) => {
+          const existing = userTimingsMap[dayObj.day];
+          return {
+            day: dayObj.day,
+            time: [
+              convertTo24HourFormat(existing?.time?.[0] || ""),
+              convertTo24HourFormat(existing?.time?.[1] || ""),
+            ],
+          };
+        });
+
+        setForm({ ...userData, timings: normalizedTimings });
 
         setSettings({
           activate: userData.isActive,
@@ -65,18 +107,21 @@ const SettingsLab = () => {
           privacy: false,
           twoFactor: false,
         });
-        // if (res.data.data?.timings) {
-        //   setForm((prev: any) => ({
-        //     ...prev,
-        //     timings: res.data.data.timings || defaultTimings,
-        //   }));
-        // }
-      } catch (err) {
-        toast.error("Failed to load user");
+      } else {
+        toast.error("Failed to load user profile");
       }
-    };
+    } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(error?.response?.data?.message || "Failed to load user");
+    }
+  };
 
-    if (token) fetchUser();
+  useEffect(() => {
+    fetchUser();
   }, [token]);
 
   useEffect(() => {

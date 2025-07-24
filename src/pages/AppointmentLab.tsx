@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const Appointments = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -32,6 +33,7 @@ const Appointments = () => {
   const [tracking, setTracking] = useState("");
   const [assigned, setAssigned] = useState("");
   const [employees, setEmployees] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const handleView = (patient: any) => {
     setSelectedPatient(patient);
@@ -82,10 +84,16 @@ const Appointments = () => {
     setPage(1);
   };
 
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("userAuthToken");
       const queryParams = new URLSearchParams({
         page: String(page),
         ...(filters.status && { status: filters.status }),
@@ -112,10 +120,15 @@ const Appointments = () => {
       setAppointments(response.data.data.appointments);
       setTotalPages(response.data.data.totalPages || 1); // in case backend adds totalPages
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message || "Failed to fetch appointments";
-      toast.error(message);
-      setError(message);
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        err?.response?.data?.message || "Failed to fetch appointments"
+      );
+      setError(err?.response?.data?.message || "Failed to fetch appointments");
     } finally {
       setLoading(false);
     }
@@ -123,7 +136,6 @@ const Appointments = () => {
 
   const fetchEmployees = async () => {
     try {
-      const token = localStorage.getItem("userAuthToken");
       const res = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-employees`,
         {
@@ -132,9 +144,19 @@ const Appointments = () => {
           },
         }
       );
-      setEmployees(res.data.data || []);
+
+      if (res.data.status) {
+        setEmployees(res.data.data || []);
+      } else {
+        toast.error("Failed to load employees");
+      }
     } catch (err: any) {
-      toast.error("Failed to load employees");
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(err?.response?.data?.message || "Failed to load employees");
     }
   };
 

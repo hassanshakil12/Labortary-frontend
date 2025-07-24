@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 interface WeeklyData {
   week: string;
@@ -39,30 +40,30 @@ const EcommerceMetrics = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   const userName = localStorage.getItem("userFullName") || "You";
 
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem("userAuthToken");
-        if (!token) {
-          throw new Error("Missing authentication token.");
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
+  const fetchMetrics = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-dashboard`,
+        {
+          headers: {
+            Authorization: token,
+          },
         }
+      );
 
-        const res = await axios.get(
-          `${
-            import.meta.env.VITE_API_BASE_URL
-          }/api/v1/laboratory/get-dashboard`,
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
-
+      if (res.data.status) {
         const metrics = res.data?.data?.metrics;
         const weeklyAppointments = res.data?.data?.weeklyAppointments;
 
@@ -71,19 +72,28 @@ const EcommerceMetrics = () => {
         }
 
         setData({ ...metrics, weeklyAppointments });
-      } catch (err: any) {
-        const message =
-          err?.response?.data?.message ||
-          err?.message ||
-          "Failed to load dashboard data.";
-        toast.error(message);
-        setError(message);
-        console.error("Dashboard error:", err);
-      } finally {
-        setLoading(false);
+      } else {
+        toast.error(res.data.message || "Failed to fetch metrics.");
       }
-    };
+    } catch (err: any) {
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to load dashboard data.";
+      toast.error(message);
+      setError(message);
+      console.error("Dashboard error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchMetrics();
   }, []);
 

@@ -2,6 +2,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const Employees = () => {
   const [employees, setEmployees] = useState<any[]>([]);
@@ -10,37 +11,46 @@ const Employees = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      const token = localStorage.getItem("userAuthToken");
-      if (!token) {
-        toast.error("Authentication token is missing.");
-        return;
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/v1/admin/get-active-employees`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.status) {
+        setEmployees(response.data?.data || []);
+      } else {
+        toast.error(response.data.message || "Failed to fetch employees");
       }
-
-      try {
-        const { data } = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-active-employees`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setEmployees(data?.data || []);
-      } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message || "Failed to fetch employees"
-        );
-      } finally {
-        setLoading(false);
+    } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
       }
-    };
-
-    fetchEmployees();
-  }, []);
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch employees"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleView = (employee: SetStateAction<any>) => {
     setSelectedEmployee(employee);
@@ -61,15 +71,9 @@ const Employees = () => {
   };
 
   const handleConfirmDelete = async () => {
-    const token = localStorage.getItem("userAuthToken");
-    if (!token) {
-      toast.error("Authentication token is missing.");
-      return;
-    }
-
     setDeleting(true);
     try {
-      const { data } = await axios.post(
+      const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/delete-employee/${
           selectedEmployee._id
         }`,
@@ -81,11 +85,20 @@ const Employees = () => {
         }
       );
 
-      setEmployees((prev) =>
-        prev.filter((e) => e._id !== selectedEmployee._id)
-      );
-      toast.success("Employee deleted successfully");
+      if (response.data.status) {
+        setEmployees((prev) =>
+          prev.filter((e) => e._id !== selectedEmployee._id)
+        );
+        toast.success("Employee deleted successfully");
+      } else {
+        toast.error(response.data.message || "Failed to delete employee");
+      }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to delete employee"
       );
@@ -102,6 +115,10 @@ const Employees = () => {
     setSelectedEmployee(null);
     document.body.style.overflow = "auto";
   };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
   if (loading) {
     return (

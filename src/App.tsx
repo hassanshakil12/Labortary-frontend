@@ -41,7 +41,7 @@ import { getMessaging, onMessage } from "firebase/messaging";
 const requestNotificationPermission = async () => {
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
-    console.warn("Notification permission not granted");
+    console.warn("❌ Notification permission not granted");
   } else {
     console.log("✅ Notification permission granted");
   }

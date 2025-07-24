@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Archeive = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -28,6 +29,7 @@ const Archeive = () => {
   const [sortOrderInput, setSortOrderInput] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
   const [laboratories, setLaboratories] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const handleApplyFilters = () => {
     setFilters({
@@ -72,10 +74,16 @@ const Archeive = () => {
     document.body.style.overflow = "auto";
   };
 
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("userAuthToken");
       const queryParams = new URLSearchParams({
         page: String(page),
         ...(filters.status && { status: filters.status }),
@@ -99,13 +107,22 @@ const Archeive = () => {
         }
       );
 
-      setAppointments(response.data.data.appointments);
-      setTotalPages(response.data.data.totalPages || 1); // in case backend adds totalPages
+      if (response.data.status) {
+        setAppointments(response.data.data.appointments);
+        setTotalPages(response.data.data.totalPages || 1);
+      } else {
+        toast.error("Failed to fetch appointments");
+      }
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message || "Failed to fetch appointments";
-      toast.error(message);
-      setError(message);
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        err?.response?.data?.message || "Failed to fetch appointments"
+      );
+      setError(err?.response?.data?.message || "Failed to fetch appointments");
     } finally {
       setLoading(false);
     }
@@ -113,7 +130,6 @@ const Archeive = () => {
 
   const fetchLaboratories = async () => {
     try {
-      const token = localStorage.getItem("userAuthToken");
       const res = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/employee/get-laboratories`,
         {
@@ -122,9 +138,21 @@ const Archeive = () => {
           },
         }
       );
-      setLaboratories(res.data.data || []);
+
+      if (res.data.status) {
+        setLaboratories(res.data.data || []);
+      } else {
+        toast.error("Failed to load laboratories");
+      }
     } catch (err: any) {
-      toast.error("Failed to load laboratories");
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
+      toast.error(
+        err?.response?.data?.message || "Failed to load laboratories"
+      );
     }
   };
 

@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
 import { getFcmToken } from "../../utils/firebase";
+import toast from "react-hot-toast";
 
 export const EyeIcon = AiOutlineEye;
 export const EyeCloseIcon = AiOutlineEyeInvisible;
-
-import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -48,7 +47,7 @@ const LoginPage = () => {
         const fcmToken = await getFcmToken();
 
         if (fcmToken) {
-          await axios.post(
+          const res = await axios.post(
             `${import.meta.env.VITE_API_BASE_URL}/api/v1/common/generate-fcm`,
             {
               fcmToken,
@@ -59,8 +58,12 @@ const LoginPage = () => {
               },
             }
           );
+
+          if (!res.data.status) {
+            toast.error("Failed to generate FCM token.");
+          }
         } else {
-          console.warn("No FCM token generated.");
+          toast.error("Unable to generate FCM token.");
         }
 
         navigate(

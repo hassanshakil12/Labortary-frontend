@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const statusOptions = ["Completed", "Pending", "Denied"];
 
@@ -19,33 +20,43 @@ export default function Dashboard() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [totalEarnings, setTotalEarnings] = useState<number | null>(null);
   const [recentTransaction, setRecentTransaction] = useState<any>(null);
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
 
   const fetchTransactions = async () => {
-    if (!token) {
-      toast.error("Authentication token is missing.");
-      return;
-    }
-
     try {
       setLoading(true);
-      const { data } = await axios.get(
+      const res = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-transactions`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      const fetchedTransactions = data?.data || [];
-      setTransactions(fetchedTransactions);
+      if (res.data.status) {
+        const fetchedTransactions = res.data?.data || [];
+        setTransactions(fetchedTransactions);
 
-      const map: { [key: string]: string } = {};
-      fetchedTransactions.forEach((tx: any) => {
-        map[tx._id] = tx.status;
-      });
-      setStatusMap(map);
+        const map: { [key: string]: string } = {};
+        fetchedTransactions.forEach((tx: any) => {
+          map[tx._id] = tx.status;
+        });
+        setStatusMap(map);
+      } else {
+        toast.error("Failed to fetch transactions");
+      }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to fetch transactions"
       );
@@ -55,11 +66,6 @@ export default function Dashboard() {
   };
 
   const fetchSummary = async () => {
-    if (!token) {
-      toast.error("Authentication token is missing.");
-      return;
-    }
-
     try {
       setLoading(true);
       const [earningsRes, recentTxRes] = await Promise.all([
@@ -79,9 +85,23 @@ export default function Dashboard() {
         ),
       ]);
 
-      setTotalEarnings(earningsRes.data?.data || 0);
-      setRecentTransaction(recentTxRes.data?.data?.[0] || null);
+      if (earningsRes.data.status) {
+        setTotalEarnings(earningsRes.data?.data || 0);
+      } else {
+        toast.error("Failed to fetch total earnings");
+      }
+
+      if (recentTxRes.data.status) {
+        setRecentTransaction(recentTxRes.data?.data?.[0] || null);
+      } else {
+        toast.error("Failed to fetch recent transaction");
+      }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to load summary data"
       );
@@ -90,21 +110,10 @@ export default function Dashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchSummary();
-    fetchTransactions();
-  }, []);
-
   const handleStatusChange = async (id: string, newStatus: string) => {
-    if (!token) {
-      toast.error("Authentication token is missing.");
-      return;
-    }
-
     setUpdatingId(id);
-
     try {
-      const { data } = await axios.post(
+      const res = await axios.post(
         `${
           import.meta.env.VITE_API_BASE_URL
         }/api/v1/admin/update-transaction/${id}`,
@@ -114,9 +123,18 @@ export default function Dashboard() {
         }
       );
 
-      setStatusMap((prev) => ({ ...prev, [id]: newStatus }));
-      toast.success(data?.message || "Status updated successfully");
+      if (res.data.status) {
+        setStatusMap((prev) => ({ ...prev, [id]: newStatus }));
+        toast.success(res.data?.message || "Status updated successfully");
+      } else {
+        toast.error("Failed to update transaction status");
+      }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to update transaction status"
       );
@@ -124,6 +142,14 @@ export default function Dashboard() {
       setUpdatingId(null);
     }
   };
+
+  useEffect(() => {
+    fetchSummary();
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   const Spinner = () => (
     <div className="flex items-center gap-2">

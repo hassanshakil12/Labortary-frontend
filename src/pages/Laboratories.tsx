@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 const Laboratories = () => {
   const [laboratories, setLaboratories] = useState<any[]>([]);
@@ -10,6 +11,7 @@ const Laboratories = () => {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const navigate = useNavigate();
 
   const handleView = (laboratory: any) => {
     setSelectedLab(laboratory);
@@ -29,16 +31,17 @@ const Laboratories = () => {
     document.body.style.overflow = "hidden";
   };
 
-  const handleConfirmDelete = async () => {
-    const token = localStorage.getItem("userAuthToken");
-    if (!token) {
-      toast.error("Authentication token is missing.");
-      return;
-    }
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
 
+  const handleConfirmDelete = async () => {
     setDeleting(true);
     try {
-      const { data } = await axios.post(
+      const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/delete-laboratory/${
           selectedLab._id
         }`,
@@ -50,9 +53,20 @@ const Laboratories = () => {
         }
       );
 
-      setLaboratories((prev) => prev.filter((e) => e._id !== selectedLab._id));
-      toast.success("Laboratory deleted successfully");
+      if (res.data.status) {
+        setLaboratories((prev) =>
+          prev.filter((e) => e._id !== selectedLab._id)
+        );
+        toast.success("Laboratory deleted successfully");
+      } else {
+        toast.error("Failed to delete laboratory");
+      }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to delete laboratory"
       );
@@ -72,13 +86,7 @@ const Laboratories = () => {
 
   const fetchLab = async () => {
     try {
-      const token = localStorage.getItem("userAuthToken");
-      if (!token) {
-        toast.error("Authentication token is missing.");
-        return;
-      }
-
-      const { data } = await axios.get(
+      const res = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/get-laboratories`,
         {
           headers: {
@@ -87,8 +95,17 @@ const Laboratories = () => {
         }
       );
 
-      setLaboratories(data?.data || []);
+      if (res.data.status) {
+        setLaboratories(res.data?.data || []);
+      } else {
+        toast.error("Failed to fetch laboratories");
+      }
     } catch (error: any) {
+      if (error.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         error?.response?.data?.message || "Failed to fetch laboratories"
       );

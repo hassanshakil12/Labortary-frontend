@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 interface InputFieldProps {
   label: string;
@@ -57,6 +58,7 @@ const PatientUploadForm: React.FC = () => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [documents, setDocuments] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -80,13 +82,18 @@ const PatientUploadForm: React.FC = () => {
     setDocuments(e.target.files);
   };
 
+  const token = localStorage.getItem("userAuthToken");
+  if (!token) {
+    toast.error("Authentication token is missing.");
+    navigate("/signin");
+    return;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const token = localStorage.getItem("userAuthToken");
     const payload = new FormData();
-
     Object.entries(formData).forEach(([key, value]) => {
       payload.append(key, value);
     });
@@ -99,7 +106,7 @@ const PatientUploadForm: React.FC = () => {
     }
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${
           import.meta.env.VITE_API_BASE_URL
         }/api/v1/laboratory/add-appointment`,
@@ -112,27 +119,35 @@ const PatientUploadForm: React.FC = () => {
         }
       );
 
-      toast.success("Appointment created successfully!");
-
-      setFormData({
-        patientName: "",
-        email: "",
-        contactNumber: "",
-        address: "",
-        accountNumber: "",
-        dateOfBirth: "",
-        gender: "",
-        fees: "",
-        priorityLevel: "",
-        appointmentDateTime: "",
-        status: "",
-        specialInstructions: "",
-        age: "",
-      });
-      setImage(null);
-      setImagePreviewUrl(null);
-      setDocuments(null);
+      if (response.data.status) {
+        toast.success("Appointment created successfully!");
+        setFormData({
+          patientName: "",
+          email: "",
+          contactNumber: "",
+          address: "",
+          accountNumber: "",
+          dateOfBirth: "",
+          gender: "",
+          fees: "",
+          priorityLevel: "",
+          appointmentDateTime: "",
+          status: "",
+          specialInstructions: "",
+          age: "",
+        });
+        setImage(null);
+        setImagePreviewUrl(null);
+        setDocuments(null);
+      } else {
+        toast.error("Failed to create appointment");
+      }
     } catch (err: any) {
+      if (err.response?.data?.code === 401) {
+        localStorage.removeItem("userAuthToken");
+        toast.error("Unauthorized access. Please log in again.");
+        navigate("/signin");
+      }
       toast.error(
         err.response?.data?.message || "Failed to create appointment"
       );
