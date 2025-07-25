@@ -132,11 +132,11 @@ const NotificationsPage = () => {
       {/* Sidebar */}
       <div className="w-full lg:w-1/4 bg-white rounded-xl shadow p-5 text-center">
         <img
-          src="./images/notification-icon.png"
+          src="./images/notification.png"
           alt="Notification Icon"
           className="w-16 h-16 mx-auto mb-4"
           onError={(e) => {
-            e.currentTarget.src = "./images/notification-icon.png";
+            e.currentTarget.src = "./images/notification.png";
           }}
         />
         <h2 className="text-lg font-semibold text-[#0077B6] mb-2">

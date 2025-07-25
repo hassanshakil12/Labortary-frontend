@@ -204,13 +204,11 @@ export default function Dashboard() {
           ) : recentTransaction ? (
             <div className="flex items-center space-x-4">
               <div className="bg-[#0077B6] p-3 rounded-full">
-                <svg
-                  className="w-8 h-8 text-[#0077B6]"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M21.8 8.6c-.3-2.2-2.1-3.6-5.1-3.6h-8c-.5 0-.9.3-1 .8l-2.6 14.2c-.1.4.2.8.6.8h3.4l.7-4h2.5c4.2 0 6.7-2.1 7.3-6.2.1-.5.1-1 .1-1.4 0-.2 0-.4-.1-.6zm-2.6 2.7c-.5 3-2.5 4.4-6 4.4h-2.2l1.4-7.7h5.2c2.3 0 3.5.7 3.8 2.2.1.3.1.7 0 1.1 0 .4-.1.7-.2 1zm-9.6 9.2h-2.1l2.3-12.4c.1-.4.4-.7.8-.7h7.6c2.6 0 4.1 1.2 4.4 3.3.1.6.1 1.1 0 1.6-.6 4.2-3.1 6.2-7.7 6.2h-2.5l-.7 4z" />
-                </svg>
+                <img
+                  src="./images/wallet.png"
+                  alt="wallet"
+                  className="w-6 h-6 invert object-contain"
+                />
               </div>
               <div className="flex justify-between w-full">
                 <div>

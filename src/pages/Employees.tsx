@@ -116,7 +116,7 @@ const Employees = () => {
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [employees.length]);
 
   return (
     <>

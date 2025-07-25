@@ -111,6 +111,9 @@ const Appointments = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log(res);
+      
+
       if (res.data.status) {
         toast.success(res.data.message || "Status updated");
         setStatusMap((prev) => ({ ...prev, [id]: newStatus }));

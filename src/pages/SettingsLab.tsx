@@ -8,6 +8,7 @@ export const EyeIcon = AiOutlineEye;
 export const EyeCloseIcon = AiOutlineEyeInvisible;
 
 const SettingsLab = () => {
+  const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
     activate: true,
     notifications: true,
@@ -49,23 +50,15 @@ const SettingsLab = () => {
     return;
   }
 
-  const convertTo24HourFormat = (time12h: string) => {
-    if (!time12h) return "";
-    const [time, modifier] = time12h.split(" ");
-    let [hours, minutes] = time.split(":");
-
-    if (modifier === "PM" && hours !== "12") {
-      hours = String(Number(hours) + 12);
-    }
-    if (modifier === "AM" && hours === "12") {
-      hours = "00";
-    }
-
-    return `${hours.padStart(2, "0")}:${minutes}`;
+  const convertToTimeInputValue = (isoTime: string) => {
+    if (!isoTime) return "";
+    const date = new Date(isoTime);
+    return date.toISOString().substring(11, 16); // returns "HH:MM"
   };
 
   const fetchUser = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/v1/laboratory/get-profile`,
         {
@@ -78,7 +71,6 @@ const SettingsLab = () => {
         setImagePreviewUrl(
           `${import.meta.env.VITE_API_BASE_URL}/${userData.image}`
         );
-        console.log("User data:", userData);
 
         const userTimingsMap = (userData.timings || []).reduce(
           (acc: any, curr: any) => {
@@ -93,8 +85,8 @@ const SettingsLab = () => {
           return {
             day: dayObj.day,
             time: [
-              convertTo24HourFormat(existing?.time?.[0] || ""),
-              convertTo24HourFormat(existing?.time?.[1] || ""),
+              convertToTimeInputValue(existing?.time?.[0] || ""),
+              convertToTimeInputValue(existing?.time?.[1] || ""),
             ],
           };
         });
@@ -117,6 +109,8 @@ const SettingsLab = () => {
         navigate("/signin");
       }
       toast.error(error?.response?.data?.message || "Failed to load user");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,7 +182,13 @@ const SettingsLab = () => {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {
         if (key === "timings") {
-          formData.append("timings", JSON.stringify(value));
+          const formattedTimings = (value as any[]).map((t) => ({
+            day: t.day,
+            time: t.time.map((time: string) =>
+              time ? new Date(`1970-01-01T${time}:00Z`).toISOString() : null
+            ),
+          }));
+          formData.append("timings", JSON.stringify(formattedTimings));
         } else {
           formData.append(key, value as string);
         }
@@ -238,11 +238,22 @@ const SettingsLab = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#0077B6]"></div>
+        <span className="ml-4 text-lg font-semibold text-gray-600">
+          Loading...
+        </span>
+      </div>
+    );
+  }
+
   return (
     <aside className="w-full max-w-sm bg-white shadow-lg rounded-xl p-6 font-sans text-gray-800 space-y-8">
       <Section title="Account Settings">
         <SidebarItem
-          icon="./images/key-hole-icon.png"
+          icon="./images/active.png"
           label="Activate Account"
           toggle
           value={settings.activate}
@@ -250,7 +261,7 @@ const SettingsLab = () => {
           onToggle={() => toggleSetting("activate")}
         />
         <SidebarItem
-          icon="./images/notification-icon.png"
+          icon="./images/notification.png"
           label="Notifications"
           toggle
           value={settings.notifications}
@@ -261,7 +272,7 @@ const SettingsLab = () => {
 
       <Section title="Privacy & Security">
         <SidebarItem
-          icon="./images/privacy-icon.png"
+          icon="./images/privacy.png"
           label="Privacy Settings"
           toggle
           value={settings.privacy}
@@ -270,7 +281,7 @@ const SettingsLab = () => {
           }
         />
         <SidebarItem
-          icon="./images/password-icon.png"
+          icon="./images/2-step.png"
           label="Two-Step Authentication"
           toggle
           value={settings.twoFactor}

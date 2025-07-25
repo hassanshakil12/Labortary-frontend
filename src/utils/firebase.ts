@@ -32,7 +32,6 @@ const getFcmToken = async () => {
     }
   } catch (err) {
     console.error("FCM Token error:", err);
-    throw err;
   }
 }
 

@@ -193,7 +193,7 @@ const SettingsEmp = () => {
     <aside className="w-full max-w-sm bg-white shadow-lg rounded-xl p-6 font-sans text-gray-800 space-y-8">
       <Section title="Account Settings">
         <SidebarItem
-          icon="./images/key-hole-icon.png"
+          icon="./images/active.png"
           label="Activate Account"
           toggle
           value={settings.activate}
@@ -201,7 +201,7 @@ const SettingsEmp = () => {
           onToggle={() => toggleSetting("activate")}
         />
         <SidebarItem
-          icon="./images/notification-icon.png"
+          icon="./images/notification.png"
           label="Notifications"
           toggle
           value={settings.notifications}
@@ -212,7 +212,7 @@ const SettingsEmp = () => {
 
       <Section title="Privacy & Security">
         <SidebarItem
-          icon="./images/privacy-icon.png"
+          icon="./images/privacy.png"
           label="Privacy Settings"
           toggle
           value={settings.privacy}
@@ -221,7 +221,7 @@ const SettingsEmp = () => {
           }
         />
         <SidebarItem
-          icon="./images/password-icon.png"
+          icon="./images/2-step.png"
           label="Two-Step Authentication"
           toggle
           value={settings.twoFactor}

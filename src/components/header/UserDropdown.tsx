@@ -93,7 +93,7 @@ export default function UserDropdown() {
       <Link to="/employee-notifications">
         <div className="relative h-11 w-11 cursor-pointer flex items-center justify-center">
           <img
-            src="/images/notification-icon.png"
+            src="/images/notification.png"
             alt="Notification"
             className="h-8 w-8"
             onClick={() => {

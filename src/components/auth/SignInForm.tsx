@@ -47,20 +47,24 @@ const LoginPage = () => {
         const fcmToken = await getFcmToken();
 
         if (fcmToken) {
-          const res = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}/api/v1/common/generate-fcm`,
-            {
-              fcmToken,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${result.data.userAuthToken}`,
+          try {
+            const res = await axios.post(
+              `${import.meta.env.VITE_API_BASE_URL}/api/v1/common/generate-fcm`,
+              {
+                fcmToken,
               },
-            }
-          );
+              {
+                headers: {
+                  Authorization: `Bearer ${result.data.userAuthToken}`,
+                },
+              }
+            );
 
-          if (!res.data.status) {
-            toast.error("Failed to generate FCM token.");
+            if (!res.data.status) {
+              toast.error("Failed to generate FCM token.");
+            }
+          } catch (error: any) {
+            console.error("FCM Token Error:", error);
           }
         } else {
           toast.error("Unable to generate FCM token.");
